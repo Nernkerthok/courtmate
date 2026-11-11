@@ -1203,6 +1203,104 @@ button:not(:disabled):active {
 .count-row button:not(.ready-switch) {
   min-height: 44px;
 }
+.team-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.team-choice {
+  min-width: 0;
+  padding: 8px 12px 12px;
+  border: 1px solid var(--team-border);
+  border-left-width: 4px;
+  border-radius: 14px;
+  background: var(--team-surface);
+}
+.team-choice-a {
+  --team-border: #79b69b;
+  --team-surface: #edf8f1;
+  --team-ink: #075e49;
+}
+.team-choice-b {
+  --team-border: #8aaee0;
+  --team-surface: #eff4ff;
+  --team-ink: #265491;
+}
+.team-choice legend {
+  padding: 2px 8px;
+  border: 1px solid var(--team-border);
+  border-radius: 6px;
+  background: var(--team-surface);
+  color: var(--team-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.team-choice-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.player-slot {
+  min-width: 0;
+}
+.slot-caption {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--team-ink);
+  font-size: 12px;
+}
+.slot-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 70px;
+  padding: 10px;
+  border: 1px solid var(--team-border);
+  border-radius: 10px;
+  background: #fff;
+}
+.slot-control:focus-within {
+  outline: 2px solid var(--team-ink);
+  outline-offset: 2px;
+}
+.slot-control:hover {
+  background: var(--team-surface);
+}
+.slot-control select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 16px;
+}
+.slot-value {
+  flex: 1;
+  min-width: 0;
+  pointer-events: none;
+}
+.slot-value strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-ink);
+  font-size: 15px;
+  font-weight: 500;
+}
+.slot-value small {
+  display: block;
+  margin-top: 3px;
+  color: var(--color-muted);
+  font-size: 12px;
+}
+.slot-control > svg {
+  flex-shrink: 0;
+  color: var(--team-ink);
+  pointer-events: none;
+}
 @media (max-height: 700px) {
   .screen-heading h1 {
     font-size: 22px;

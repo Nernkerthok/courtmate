@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   Check,
+  ChevronDown,
   ChevronRight,
   Download,
   Flag,
@@ -68,6 +69,69 @@ function Label({ title, children }: { title: string; children: ReactNode }) {
       <span className="caption">{title}</span>
       {children}
     </label>
+  );
+}
+function TeamPicker({
+  values,
+  players,
+  optionsFor,
+  labelFor,
+  onChange,
+}: {
+  values: number[];
+  players: Player[];
+  optionsFor: (index: number) => Player[];
+  labelFor: (index: number) => string;
+  onChange: (index: number, id: number) => void;
+}) {
+  return (
+    <div className="team-picker">
+      {["A", "B"].map((team, t) => (
+        <fieldset
+          className={`team-choice team-choice-${team.toLowerCase()}`}
+          key={team}
+        >
+          <legend>ทีม {team}</legend>
+          <div className="team-choice-slots">
+            {[0, 1].map((position) => {
+              const index = t * 2 + position;
+              const selected = players.find((p) => p.id === values[index]);
+              return (
+                <label className="player-slot" key={position}>
+                  <span className="slot-caption">คนที่ {position + 1}</span>
+                  <span className="slot-control">
+                    <select
+                      required
+                      aria-label={labelFor(index)}
+                      value={values[index] || ""}
+                      onChange={(e) => onChange(index, Number(e.target.value))}
+                    >
+                      <option value="">เลือกผู้เล่น</option>
+                      {optionsFor(index).map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} · L{p.level} · {p.games} เกม
+                        </option>
+                      ))}
+                    </select>
+                    <span className="slot-value" aria-hidden="true">
+                      <strong title={selected?.name}>
+                        {selected?.name || "เลือกผู้เล่น"}
+                      </strong>
+                      <small>
+                        {selected
+                          ? `L${selected.level} · ${selected.games} เกม`
+                          : "ยังไม่ได้เลือก"}
+                      </small>
+                    </span>
+                    <ChevronDown size={16} aria-hidden="true" />
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+      ))}
+    </div>
   );
 }
 function Notice({
@@ -181,7 +245,7 @@ export default function App() {
             </span>
           </button>
           <div className="flex items-center gap-2">
-            <span className="version-badge">v0.6</span>
+            <span className="version-badge">v0.6.1</span>
             <button
               className="icon-btn"
               aria-label="เริ่มก๊วนใหม่"
@@ -1130,45 +1194,28 @@ export default function App() {
                     <h3 className="mb-3 text-xs font-medium text-muted">
                       คอร์ท {court + 1}
                     </h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      {Array.from({ length: 4 }, (_, slot) => {
-                        const index = court * 4 + slot;
-                        return (
-                          <Label
-                            key={slot}
-                            title={`ทีม ${slot < 2 ? "A" : "B"} · คนที่ ${(slot % 2) + 1}`}
-                          >
-                            <select
-                              className="field !text-sm"
-                              required
-                              aria-label={`คอร์ท ${court + 1} ทีม ${slot < 2 ? "A" : "B"} คนที่ ${(slot % 2) + 1}`}
-                              value={c.slots[index] || ""}
-                              onChange={(e) =>
-                                c.setSlots((values) =>
-                                  values.map((v, i) =>
-                                    i === index ? Number(e.target.value) : v,
-                                  ),
-                                )
-                              }
-                            >
-                              <option value="">เลือกผู้เล่น</option>
-                              {c.players
-                                .filter(
-                                  (p) =>
-                                    p.available &&
-                                    (!c.slots.includes(p.id) ||
-                                      c.slots[index] === p.id),
-                                )
-                                .map((p) => (
-                                  <option key={p.id} value={p.id}>
-                                    {p.name} · L{p.level} · {p.games} เกม
-                                  </option>
-                                ))}
-                            </select>
-                          </Label>
-                        );
-                      })}
-                    </div>
+                    <TeamPicker
+                      values={c.slots.slice(court * 4, court * 4 + 4)}
+                      players={c.players}
+                      labelFor={(slot) =>
+                        `คอร์ท ${court + 1} ทีม ${slot < 2 ? "A" : "B"} คนที่ ${(slot % 2) + 1}`
+                      }
+                      optionsFor={(slot) =>
+                        c.players.filter(
+                          (p) =>
+                            p.available &&
+                            (!c.slots.includes(p.id) ||
+                              c.slots[court * 4 + slot] === p.id),
+                        )
+                      }
+                      onChange={(slot, id) =>
+                        c.setSlots((values) =>
+                          values.map((v, i) =>
+                            i === court * 4 + slot ? id : v,
+                          ),
+                        )
+                      }
+                    />
                   </section>
                 ))}
               </div>
@@ -1184,47 +1231,32 @@ export default function App() {
                 เปลี่ยนผู้เล่นได้ก่อนจบเกม
                 คนในคอร์ทอื่นที่ยังเล่นอยู่จะไม่อยู่ในตัวเลือก
               </p>
-              <div className="grid grid-cols-2 gap-3">
-                {c.matchDraft.map((pid, index) => (
-                  <Label
-                    key={index}
-                    title={`ทีม ${index < 2 ? "A" : "B"} · คนที่ ${(index % 2) + 1}`}
-                  >
-                    <select
-                      className="field !text-sm"
-                      required
-                      aria-label={`แก้ทีม ${index < 2 ? "A" : "B"} คนที่ ${(index % 2) + 1}`}
-                      value={pid || ""}
-                      onChange={(e) =>
-                        c.setMatchDraft((ids) =>
-                          ids.map((value, i) =>
-                            i === index ? Number(e.target.value) : value,
-                          ),
-                        )
-                      }
-                    >
-                      <option value="">เลือกผู้เล่น</option>
-                      {c.players
-                        .filter(
-                          (p) =>
-                            (p.available || c.matchDraft.includes(p.id)) &&
-                            (!c.matchDraft.includes(p.id) || pid === p.id) &&
-                            !c.matches.some(
-                              (m) =>
-                                m.id !== c.editingMatchId &&
-                                !m.done &&
-                                [...m.a, ...m.b].includes(p.id),
-                            ),
-                        )
-                        .map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name} · L{p.level} · {p.games} เกม
-                          </option>
-                        ))}
-                    </select>
-                  </Label>
-                ))}
-              </div>
+              <TeamPicker
+                values={c.matchDraft}
+                players={c.players}
+                labelFor={(index) =>
+                  `แก้ทีม ${index < 2 ? "A" : "B"} คนที่ ${(index % 2) + 1}`
+                }
+                optionsFor={(index) =>
+                  c.players.filter(
+                    (p) =>
+                      (p.available || c.matchDraft.includes(p.id)) &&
+                      (!c.matchDraft.includes(p.id) ||
+                        c.matchDraft[index] === p.id) &&
+                      !c.matches.some(
+                        (m) =>
+                          m.id !== c.editingMatchId &&
+                          !m.done &&
+                          [...m.a, ...m.b].includes(p.id),
+                      ),
+                  )
+                }
+                onChange={(index, id) =>
+                  c.setMatchDraft((ids) =>
+                    ids.map((value, i) => (i === index ? id : value)),
+                  )
+                }
+              />
               <button className="btn btn-primary mt-5 w-full">
                 <Check size={16} />
                 ยืนยันผู้เล่นคอร์ทนี้

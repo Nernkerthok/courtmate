@@ -20,6 +20,7 @@ Compact mobile activity tool for friends organizing badminton. Use the skill's F
 - Roster grouped by Level 1–5; 2/3/4 columns at phone/600px/900px. Whole player tile opens an action dialog.
 - Prefer 44px touch controls; 48px primary actions. Selected, disabled, hover and pressed states must be visible without changing layout.
 - Native dialog for focus containment and Escape; labeled fields and controls. Keep success feedback visible above the dialog layer.
+- Team selection uses a green fieldset for Team A and blue for Team B, with explicit team legends. Show the selected name first, then Level and games below; retain native select controls for mobile and keyboard support.
 - Normal text contrast target 4.5:1. Do not convey skill or selected state only through color.
 - Honor reduced motion; no new runtime dependencies or remote fonts.
 
