@@ -6,6 +6,7 @@ import {
   Flag,
   Image as ImageIcon,
   Plus,
+  Pencil,
   RotateCcw,
   Settings2,
   Share2,
@@ -17,7 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { type ReactNode } from "react";
-import { baht, levelNames, MAX_PLAYERS, type Player } from "./domain";
+import { baht, gameRate, levelNames, MAX_PLAYERS, type Player } from "./domain";
 import { useCourtMate } from "./useCourtMate";
 
 const steps = [
@@ -106,11 +107,13 @@ export default function App() {
   };
   const modalTitles = {
     group: c.groupCreated ? "เปลี่ยนชื่อก๊วน" : "สร้างก๊วนใหม่",
-    player: "เพิ่มเพื่อนเข้าก๊วน",
+    player: c.editingPlayerId !== null ? "แก้ไขผู้เล่น" : "เพิ่มเพื่อนเข้าก๊วน",
     expense: "เพิ่มค่าใช้จ่าย",
     costSettings: "ตั้งค่าค่าใช้จ่าย",
     playSettings: "รูปแบบการจับคู่",
     custom: "เลือกคู่ด้วยตัวเอง",
+    editMatch: `แก้ไขผู้เล่นคอร์ท ${c.editingMatchId}`,
+    billDetails: "วิธีคิดราคาต่อเกม",
     image: "รูปสรุปพร้อมแชร์",
     reset: "เริ่มก๊วนใหม่?",
   };
@@ -172,7 +175,7 @@ export default function App() {
           </button>
           <div className="flex items-center gap-2">
             <span className="rounded-md border border-[#e0e8d8] bg-club-50 px-2 py-1 text-[9px] text-[#809568]">
-              v0.3
+              v0.4
             </span>
             <button
               className="icon-btn !size-9"
@@ -249,8 +252,8 @@ export default function App() {
                   </button>
                   <button
                     className="btn btn-primary !min-h-10 !px-3 !py-2 !text-xs"
-                    onClick={() => c.setModal("player")}
-                    disabled={c.active || c.players.length >= MAX_PLAYERS}
+                    onClick={c.openNewPlayer}
+                    disabled={c.players.length >= MAX_PLAYERS}
                   >
                     <Plus size={15} />
                     เพิ่มคน
@@ -269,15 +272,24 @@ export default function App() {
                         <article className="player-tile" key={p.id}>
                           <Avatar p={p} />
                           <div className="min-w-0 flex-1">
-                            <h3 className="truncate text-sm font-medium">
-                              {p.name}
-                            </h3>
+                            <button
+                              className="flex max-w-full items-center gap-1 text-left"
+                              aria-label={`แก้ไข ${p.name}`}
+                              onClick={() => c.openEditPlayer(p.id)}
+                            >
+                              <h3 className="truncate text-sm font-medium">
+                                {p.name}
+                              </h3>
+                              <Pencil
+                                size={11}
+                                className="shrink-0 text-[#a1b28b]"
+                              />
+                            </button>
                             <label className="flex items-center gap-1 text-[9px] text-[#8ea17a]">
                               L
                               <select
                                 aria-label={`Level ${p.name}`}
                                 value={p.level}
-                                disabled={c.active}
                                 onChange={(e) =>
                                   c.setPlayers((ps) =>
                                     ps.map((x) =>
@@ -302,19 +314,14 @@ export default function App() {
                           </div>
                           <button
                             aria-label={`ลบ ${p.name}`}
-                            disabled={c.active || p.games > 0}
+                            disabled={p.games > 0}
                             title={
                               p.games
                                 ? "เก็บไว้เพื่อหารค่าใช้จ่าย"
                                 : "ลบผู้เล่น"
                             }
                             className="icon-btn !size-8"
-                            onClick={() => {
-                              c.setPlayers((ps) =>
-                                ps.filter((x) => x.id !== p.id),
-                              );
-                              c.notify(`ลบ ${p.name} ออกจากก๊วนแล้ว`);
-                            }}
+                            onClick={() => c.removePlayer(p.id)}
                           >
                             <X size={14} />
                           </button>
@@ -328,7 +335,7 @@ export default function App() {
                       <p>แตะ “เพิ่มคน” ด้านบนเพื่อเริ่มรายชื่อ</p>
                       <button
                         className="btn btn-secondary mt-5"
-                        onClick={() => c.setModal("player")}
+                        onClick={c.openNewPlayer}
                       >
                         <Plus size={16} />
                         เพิ่มผู้เล่นคนแรก
@@ -423,7 +430,31 @@ export default function App() {
                         >
                           <div className="court-card-heading">
                             <span>COURT {String(m.id).padStart(2, "0")}</span>
-                            <span>{m.done ? "จบเกมแล้ว" : "พร้อมลงสนาม"}</span>
+                            <div className="flex items-center gap-1">
+                              <span>
+                                {m.done ? "จบเกมแล้ว" : "พร้อมลงสนาม"}
+                              </span>
+                              {!m.done && (
+                                <>
+                                  <button
+                                    className="court-edit-button"
+                                    aria-label={`แก้ไขผู้เล่นคอร์ท ${m.id}`}
+                                    title="แก้ไขผู้เล่นก่อนจบเกม"
+                                    onClick={() => c.openEditMatch(m.id)}
+                                  >
+                                    <Pencil size={14} />
+                                  </button>
+                                  <button
+                                    className="court-edit-button"
+                                    aria-label={`ยกเลิกคอร์ท ${m.id}`}
+                                    title="ยกเลิก ไม่นับเกม"
+                                    onClick={() => c.cancelMatch(m.id)}
+                                  >
+                                    <X size={17} />
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </div>
                           <div className="teams-row">
                             {[m.a, m.b].map((team, t) => (
@@ -495,9 +526,19 @@ export default function App() {
                         <div className="count-row" key={p.id}>
                           <Avatar p={p} />
                           <div className="min-w-0 flex-1">
-                            <strong className="block truncate text-xs font-medium">
-                              {p.name}
-                            </strong>
+                            <button
+                              className="flex max-w-full items-center gap-1 text-left"
+                              aria-label={`แก้ไข ${p.name}`}
+                              onClick={() => c.openEditPlayer(p.id)}
+                            >
+                              <strong className="block truncate text-xs font-medium">
+                                {p.name}
+                              </strong>
+                              <Pencil
+                                size={11}
+                                className="shrink-0 text-[#a1b28b]"
+                              />
+                            </button>
                             <small>
                               L{p.level} · {levelNames[p.level]}
                             </small>
@@ -509,7 +550,6 @@ export default function App() {
                             role="switch"
                             aria-label={`พร้อมเล่น ${p.name}`}
                             aria-checked={p.available}
-                            disabled={c.active}
                             onClick={() =>
                               c.setPlayers((ps) =>
                                 ps.map((x) =>
@@ -630,10 +670,14 @@ export default function App() {
               <div className="list-heading">
                 <h3>หารตามจำนวนเกม</h3>
                 {c.summary && (
-                  <span className="flex items-center gap-1 text-[9px] text-club-500">
-                    <Check size={12} />
-                    คำนวณแล้ว
-                  </span>
+                  <button
+                    className="flex min-h-8 items-center gap-1 rounded-lg bg-club-50 px-2 text-[10px] text-club-600"
+                    onClick={() => c.setModal("billDetails")}
+                    aria-label="ดูวิธีคิดราคาต่อเกม"
+                  >
+                    ฿{baht(gameRate(c.summary.bill))}/คน/เกม{" "}
+                    <ChevronRight size={13} />
+                  </button>
                 )}
               </div>
               <div className="panel-scroll">
@@ -790,7 +834,10 @@ export default function App() {
                   maxLength={40}
                   value={c.name}
                   onChange={(e) => c.setName(e.target.value)}
-                  disabled={c.active || c.players.length >= MAX_PLAYERS}
+                  disabled={
+                    c.editingPlayerId === null &&
+                    c.players.length >= MAX_PLAYERS
+                  }
                 />
               </Label>
               <div className="mt-4">
@@ -810,7 +857,9 @@ export default function App() {
                 </Label>
               </div>
               <p className="mt-3 text-[10px] leading-6 text-[#96a688]">
-                มี {c.players.length} คนในก๊วน · เพิ่มต่อได้ทันทีหลังสำเร็จ
+                {c.editingPlayerId !== null
+                  ? "แก้ชื่อและ Level ได้ โดยจำนวนเกมเดิมไม่เปลี่ยน"
+                  : `มี ${c.players.length} คนในก๊วน · เพิ่มต่อได้ทันทีหลังสำเร็จ`}
               </p>
               <div className="mt-5 grid grid-cols-[1fr_1.7fr] gap-3">
                 <button
@@ -822,10 +871,19 @@ export default function App() {
                 </button>
                 <button
                   className="btn btn-primary"
-                  disabled={c.active || c.players.length >= MAX_PLAYERS}
+                  disabled={
+                    c.editingPlayerId === null &&
+                    c.players.length >= MAX_PLAYERS
+                  }
                 >
-                  <Plus size={16} />
-                  เพิ่มผู้เล่น
+                  {c.editingPlayerId !== null ? (
+                    <Check size={16} />
+                  ) : (
+                    <Plus size={16} />
+                  )}
+                  {c.editingPlayerId !== null
+                    ? "ยืนยันการแก้ไข"
+                    : "เพิ่มผู้เล่น"}
                 </button>
               </div>
             </form>
@@ -1064,6 +1122,124 @@ export default function App() {
                 ยืนยันคู่ลงสนาม
               </button>
             </form>
+          )}
+          {c.modal === "editMatch" && (
+            <form onSubmit={c.applyMatchEdit}>
+              <p className="mb-4 text-xs leading-6 text-[#92a47d]">
+                เปลี่ยนผู้เล่นได้ก่อนจบเกม
+                คนในคอร์ทอื่นที่ยังเล่นอยู่จะไม่อยู่ในตัวเลือก
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                {c.matchDraft.map((pid, index) => (
+                  <Label
+                    key={index}
+                    title={`ทีม ${index < 2 ? "A" : "B"} · คนที่ ${(index % 2) + 1}`}
+                  >
+                    <select
+                      className="field !text-sm"
+                      required
+                      aria-label={`แก้ทีม ${index < 2 ? "A" : "B"} คนที่ ${(index % 2) + 1}`}
+                      value={pid || ""}
+                      onChange={(e) =>
+                        c.setMatchDraft((ids) =>
+                          ids.map((value, i) =>
+                            i === index ? Number(e.target.value) : value,
+                          ),
+                        )
+                      }
+                    >
+                      <option value="">เลือกผู้เล่น</option>
+                      {c.players
+                        .filter(
+                          (p) =>
+                            (p.available || c.matchDraft.includes(p.id)) &&
+                            (!c.matchDraft.includes(p.id) || pid === p.id) &&
+                            !c.matches.some(
+                              (m) =>
+                                m.id !== c.editingMatchId &&
+                                !m.done &&
+                                [...m.a, ...m.b].includes(p.id),
+                            ),
+                        )
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} · L{p.level} · {p.games} เกม
+                          </option>
+                        ))}
+                    </select>
+                  </Label>
+                ))}
+              </div>
+              <button className="btn btn-primary mt-5 w-full">
+                <Check size={16} />
+                ยืนยันผู้เล่นคอร์ทนี้
+              </button>
+            </form>
+          )}
+          {c.modal === "billDetails" && c.summary && (
+            <div className="billing-details">
+              <p className="caption">รายการรวมทั้งหมด</p>
+              {[
+                ["ค่าสนาม", c.summary.bill.courtCents],
+                ["ค่าลูกแบด", c.summary.costs.shuttleCostCents],
+                ...c.summary.costs.extras.map((e) => [e.name, e.cents]),
+              ].map(([label, cents], i) => (
+                <div
+                  className="flex justify-between gap-4 py-2 text-xs text-[#81966c]"
+                  key={i}
+                >
+                  <span className="min-w-0 break-words">{label}</span>
+                  <strong className="shrink-0 font-medium">
+                    ฿{baht(Number(cents))}
+                  </strong>
+                </div>
+              ))}
+              <div className="rate-formula">
+                <span>
+                  {[
+                    c.summary.bill.courtCents,
+                    c.summary.costs.shuttleCostCents,
+                    ...c.summary.costs.extras.map((e) => e.cents),
+                  ]
+                    .filter((v) => v !== 0)
+                    .map((v) => baht(v))
+                    .join(" + ") || "0.00"}{" "}
+                  = {baht(c.summary.bill.totalCents)} บาท
+                </span>
+                <strong>
+                  {baht(c.summary.bill.totalCents)} ÷{" "}
+                  {c.summary.bill.totalGames} = {baht(gameRate(c.summary.bill))}{" "}
+                  บาท
+                </strong>
+                <span>ราคาเฉลี่ยต่อคนต่อเกม · หารด้วยผลรวมเกมของผู้เล่น</span>
+              </div>
+              <p className="mt-4 text-[10px] leading-6 text-[#91a17d]">
+                1 แมตช์ประเภทคู่ = ผู้เล่น 4 คน × คนละ 1 เกม
+                <br />
+                เล่นจบ {c.history.length} แมตช์ = ผลรวมเกมของผู้เล่น{" "}
+                {c.summary.bill.totalGames}
+              </p>
+              <div className="mt-4 space-y-2">
+                {c.summary.bill.rows.map((row) => (
+                  <div
+                    key={row.id}
+                    className="flex justify-between gap-2 text-xs"
+                  >
+                    <span className="min-w-0 break-words">
+                      {row.name} · {row.games} ×{" "}
+                      {baht(gameRate(c.summary!.bill))}
+                    </span>
+                    <strong className="shrink-0 font-medium">
+                      ฿{baht(row.cents)}
+                    </strong>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 text-[10px] leading-6 text-[#91a17d]">
+                ราคาเฉลี่ยแสดงทศนิยม 2 ตำแหน่ง คำนวณจริงก่อนปัดเศษรายคน
+                แล้วกระจายเศษสตางค์ให้ยอดรวมตรงกัน
+              </p>
+            </div>
           )}
           {c.modal === "image" && (
             <img

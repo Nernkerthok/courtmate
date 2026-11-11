@@ -76,6 +76,64 @@ export function completeMatch(players: Player[], match: Match): Player[] {
     ids.includes(p.id) ? { ...p, games: p.games + 1 } : p,
   );
 }
+export function updatePlayer(
+  players: Player[],
+  id: number,
+  name: string,
+  level: number,
+): Player[] {
+  const value = name.trim();
+  if (!players.some((p) => p.id === id)) throw new Error("ไม่พบผู้เล่นนี้");
+  if (
+    !value ||
+    value.length > 40 ||
+    !Number.isInteger(level) ||
+    level < 1 ||
+    level > 5
+  )
+    throw new Error("ตรวจชื่อและ Level อีกครั้ง");
+  if (
+    players.some(
+      (p) =>
+        p.id !== id && p.name.toLocaleLowerCase() === value.toLocaleLowerCase(),
+    )
+  )
+    throw new Error("มีชื่อนี้แล้ว ลองเติมชื่อเล่นหรือหมายเลข");
+  return players.map((p) => (p.id === id ? { ...p, name: value, level } : p));
+}
+export function cancelPendingMatch(matches: Match[], id: number): Match[] {
+  const match = matches.find((m) => m.id === id);
+  if (!match || match.done)
+    throw new Error("ยกเลิกได้เฉพาะคอร์ทที่ยังไม่จบเกม");
+  return matches.filter((m) => m.id !== id);
+}
+export function replacePendingMatch(
+  players: Player[],
+  matches: Match[],
+  id: number,
+  ids: number[],
+): Match[] {
+  const match = matches.find((m) => m.id === id);
+  if (!match || match.done)
+    throw new Error("แก้คู่ได้เฉพาะคอร์ทที่ยังไม่จบเกม");
+  if (
+    ids.length !== 4 ||
+    new Set(ids).size !== 4 ||
+    ids.some((pid) => !players.some((p) => p.id === pid))
+  )
+    throw new Error("เลือกผู้เล่น 4 คนให้ครบและไม่ซ้ำกัน");
+  const occupied = matches
+    .filter((m) => m.id !== id && !m.done)
+    .flatMap((m) => [...m.a, ...m.b]);
+  if (ids.some((pid) => occupied.includes(pid)))
+    throw new Error("ผู้เล่นคนนี้อยู่ในอีกคอร์ทที่ยังไม่จบเกม");
+  return matches.map((m) =>
+    m.id === id ? { ...m, a: [ids[0], ids[1]], b: [ids[2], ids[3]] } : m,
+  );
+}
+export function gameRate(bill: Pick<Bill, "totalCents" | "totalGames">) {
+  return bill.totalGames > 0 ? bill.totalCents / bill.totalGames : 0;
+}
 export function calculateBill(
   players: Pick<Player, "id" | "name" | "games">[],
   costs: CostInput,

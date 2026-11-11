@@ -3,6 +3,9 @@ import {
   autoPair,
   calculateBill,
   completeMatch,
+  updatePlayer,
+  cancelPendingMatch,
+  replacePendingMatch,
   MAX_PLAYERS,
   type Bill,
   type CostInput,
@@ -27,6 +30,9 @@ export function useCourtMate() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [name, setName] = useState("");
   const [level, setLevel] = useState(3);
+  const [editingPlayerId, setEditingPlayerId] = useState<number | null>(null);
+  const [editingMatchId, setEditingMatchId] = useState<number | null>(null);
+  const [matchDraft, setMatchDraft] = useState<number[]>([0, 0, 0, 0]);
   const id = useRef(1);
   const [mode, setMode] = useState<"auto" | "custom">("auto");
   const [courts, setCourts] = useState(1);
@@ -60,6 +66,8 @@ export function useCourtMate() {
     | "costSettings"
     | "playSettings"
     | "custom"
+    | "editMatch"
+    | "billDetails"
     | null
   >(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -97,6 +105,17 @@ export function useCourtMate() {
     e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) return;
+    if (editingPlayerId !== null) {
+      try {
+        setPlayers(updatePlayer(players, editingPlayerId, trimmed, level));
+        setModal(null);
+        setEditingPlayerId(null);
+        notify("แก้ไขชื่อและ Level ผู้เล่นสำเร็จ");
+      } catch (error) {
+        notify((error as Error).message);
+      }
+      return;
+    }
     if (players.length >= MAX_PLAYERS) {
       notify("เพิ่มได้สูงสุด 40 คน");
       return;
@@ -119,6 +138,69 @@ export function useCourtMate() {
     setPlayers((p) => [...p, nextPlayer]);
     setName("");
     notify(`เพิ่ม ${trimmed} เข้าก๊วนสำเร็จ`);
+  };
+  const openNewPlayer = () => {
+    setEditingPlayerId(null);
+    setName("");
+    setLevel(3);
+    setModal("player");
+  };
+  const openEditPlayer = (pid: number) => {
+    const player = players.find((p) => p.id === pid);
+    if (!player) return;
+    setEditingPlayerId(pid);
+    setName(player.name);
+    setLevel(player.level);
+    setModal("player");
+  };
+  const removePlayer = (pid: number) => {
+    const player = players.find((p) => p.id === pid);
+    if (!player) return;
+    if (player.games > 0) {
+      notify(
+        "ผู้เล่นมีเกมที่จบแล้ว แก้ชื่อได้ แต่ต้องเก็บจำนวนเกมไว้เพื่อหารเงิน",
+      );
+      return;
+    }
+    const affected = matches.filter(
+      (m) => !m.done && [...m.a, ...m.b].includes(pid),
+    );
+    setMatches((ms) => ms.filter((m) => !affected.some((a) => a.id === m.id)));
+    setPlayers((ps) => ps.filter((p) => p.id !== pid));
+    setSlots((values) => values.map((value) => (value === pid ? 0 : value)));
+    notify(
+      affected.length
+        ? `ลบ ${player.name} และยกเลิกคอร์ทที่เกี่ยวข้องแล้ว ไม่นับเกม`
+        : `ลบ ${player.name} ออกจากก๊วนแล้ว`,
+    );
+  };
+  const cancelMatch = (mid: number) => {
+    try {
+      setMatches(cancelPendingMatch(matches, mid));
+      notify(`ยกเลิกคอร์ท ${mid} แล้ว ไม่นับจำนวนเกม`);
+    } catch (error) {
+      notify((error as Error).message);
+    }
+  };
+  const openEditMatch = (mid: number) => {
+    const match = matches.find((m) => m.id === mid && !m.done);
+    if (!match) return;
+    setEditingMatchId(mid);
+    setMatchDraft([...match.a, ...match.b]);
+    setModal("editMatch");
+  };
+  const applyMatchEdit = (e: FormEvent) => {
+    e.preventDefault();
+    if (editingMatchId === null) return;
+    try {
+      setMatches(
+        replacePendingMatch(players, matches, editingMatchId, matchDraft),
+      );
+      setModal(null);
+      notify("แก้ไขคู่ผู้เล่นสำเร็จ ยังไม่นับเกมจนกดจบเกม");
+    } catch (error) {
+      notify((error as Error).message);
+    }
   };
   const sample = () => {
     if (players.length) return;
@@ -173,15 +255,16 @@ export function useCourtMate() {
     }
   };
   const finish = (match: Match) => {
-    if (match.done) return;
-    setPlayers((p) => completeMatch(p, match));
+    const current = matches.find((m) => m.id === match.id);
+    if (!current || current.done) return;
+    setPlayers((p) => completeMatch(p, current));
     setMatches((ms) =>
       ms.map((m) => (m.id === match.id ? { ...m, done: true } : m)),
     );
     const played = {
       id: gameId.current++,
       round,
-      match: { ...match, done: true },
+      match: { ...current, done: true },
     };
     setHistory((h) => [...h, played]);
     notify(`จบเกมคอร์ท ${match.id} · ผู้เล่นทั้ง 4 คนเพิ่มคนละ 1 เกม`);
@@ -190,6 +273,20 @@ export function useCourtMate() {
     const last = history[history.length - 1];
     if (!last) return;
     const ids = [...last.match.a, ...last.match.b];
+    if (
+      last.round === round &&
+      matches.some(
+        (m) =>
+          m.id !== last.match.id &&
+          !m.done &&
+          [...m.a, ...m.b].some((pid) => ids.includes(pid)),
+      )
+    ) {
+      notify(
+        "ผู้เล่นอยู่ในอีกคอร์ทที่ยังไม่จบ ยกเลิกหรือแก้คอร์ทนั้นก่อนย้อนเกม",
+      );
+      return;
+    }
     setPlayers((ps) =>
       ps.map((p) =>
         ids.includes(p.id) ? { ...p, games: Math.max(0, p.games - 1) } : p,
@@ -318,6 +415,9 @@ export function useCourtMate() {
     setPlayers([]);
     setGroupCreated(false);
     setGroupDraft("");
+    setEditingPlayerId(null);
+    setEditingMatchId(null);
+    setMatchDraft([0, 0, 0, 0]);
     setPlayView("courts");
     setGroupName("");
     setName("");
@@ -389,6 +489,16 @@ export function useCourtMate() {
     setGroupDraft,
     groupName,
     players,
+    editingPlayerId,
+    openNewPlayer,
+    openEditPlayer,
+    removePlayer,
+    editingMatchId,
+    matchDraft,
+    setMatchDraft,
+    openEditMatch,
+    applyMatchEdit,
+    cancelMatch,
     setPlayers,
     name,
     setName,

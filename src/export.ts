@@ -1,4 +1,4 @@
-import { baht, type Bill, type CostInput } from "./domain";
+import { baht, gameRate, type Bill, type CostInput } from "./domain";
 export async function createBillImage(
   name: string,
   bill: Bill,
@@ -12,7 +12,11 @@ export async function createBillImage(
     ...costs.extras.map((e) => [e.name, e.cents] as const),
   ];
   const width = 720;
-  const height = 570 + lineItems.length * 44 + bill.rows.length * 56;
+  const height =
+    760 +
+    lineItems.length * 44 +
+    Math.ceil(lineItems.length / 3) * 28 +
+    bill.rows.length * 56;
   canvas.width = width * 2;
   canvas.height = height * 2;
   const ctx = canvas.getContext("2d");
@@ -81,8 +85,39 @@ export async function createBillImage(
   text("รวมทั้งหมด", 50, y + 15, 22, "#294b39", true);
   right(`฿${baht(bill.totalCents)}`, y + 15, 28, "#295d3d", true);
   y += 62;
+  const terms = lineItems
+    .map(([, amount]) => amount)
+    .filter((amount) => amount !== 0);
+  const sum =
+    (terms.length ? terms : [0]).map((amount) => baht(amount)).join(" + ") +
+    ` = ${baht(bill.totalCents)} บาท`;
+  ctx.font = '400 18px "IBM Plex Sans Thai", sans-serif';
+  let equationLine = "";
+  for (const word of sum.split(" ")) {
+    const candidate = equationLine ? equationLine + " " + word : word;
+    if (ctx.measureText(candidate).width > 615 && equationLine) {
+      text(equationLine, 50, y, 18, "#7b8c74");
+      y += 28;
+      equationLine = word;
+    } else equationLine = candidate;
+  }
+  if (equationLine) {
+    text(equationLine, 50, y, 18, "#7b8c74");
+    y += 32;
+  }
   text(
-    `หารตามจำนวนเกม · ผลรวมเกมของทุกคน ${bill.totalGames}`,
+    `${baht(bill.totalCents)} ÷ ${bill.totalGames} = ${baht(gameRate(bill))} บาท`,
+    50,
+    y,
+    23,
+    "#295d3d",
+    true,
+  );
+  y += 31;
+  text("ราคาเฉลี่ยต่อคนต่อเกม (ก่อนปัดเศษรายคน)", 50, y, 17, "#7b8c74");
+  y += 39;
+  text(
+    `หารตามจำนวนเกม · ผลรวมเกมของผู้เล่นทุกคน ${bill.totalGames}`,
     50,
     y,
     17,

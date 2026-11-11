@@ -402,6 +402,46 @@ body,
   font-size: 8px;
   letter-spacing: 0;
 }
+.court-edit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 31px;
+  height: 31px;
+  border-radius: 7px;
+  background: #ffffff0b;
+  color: #d5e9b3;
+}
+.court-edit-button:hover {
+  background: #ffffff18;
+}
+.rate-formula {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  border: 1px solid #dfe8d2;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 15px;
+  background: #eff5e6;
+  overflow-wrap: anywhere;
+}
+.rate-formula > span:first-child {
+  font-size: 12px;
+  color: #8b9f76;
+  line-height: 1.8;
+}
+.rate-formula > strong {
+  font-size: 17px;
+  font-weight: 500;
+  color: #466c3b;
+  line-height: 1.7;
+}
+.rate-formula > span:last-child {
+  font-size: 10px;
+  color: #94a780;
+  line-height: 1.9;
+}
 .teams-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
