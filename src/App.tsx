@@ -11,7 +11,6 @@ import {
   RotateCcw,
   Settings2,
   Share2,
-  ShieldCheck,
   Shuffle,
   Sparkles,
   Trash2,
@@ -29,11 +28,11 @@ const steps = [
   { id: "cost", label: "ค่าใช้จ่าย", icon: Wallet },
 ] as const;
 const colors = [
-  "bg-[#dfebcf] text-[#607b44]",
-  "bg-[#e1e9f2] text-[#647e9b]",
-  "bg-[#f3e5d3] text-[#aa8457]",
-  "bg-[#eae1ef] text-[#947da3]",
-  "bg-[#f0dfe6] text-[#ab7c8f]",
+  "bg-[#e2efcf] text-[#426522]",
+  "bg-[#e2edf5] text-[#395f82]",
+  "bg-[#f6e8cf] text-[#805e28]",
+  "bg-[#eee4f4] text-[#715187]",
+  "bg-[#f5e2e9] text-[#8b4463]",
 ];
 function Shuttle({ className = "" }: { className?: string }) {
   return (
@@ -170,18 +169,21 @@ export default function App() {
         <div className="mx-auto flex h-full w-full max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
           <button
             onClick={() => c.go("group")}
-            className="flex items-center gap-1.5 text-[22px] font-semibold tracking-[-1px]"
+            className="flex items-center gap-2.5 text-left font-semibold"
             aria-label="CourtMate หน้าจัดก๊วน"
           >
-            <Shuttle className="h-8 w-7 rotate-[28deg] text-club-700" />
-            CourtMate
+            <span className="brand-mark">
+              <Shuttle className="h-7 w-6 rotate-[28deg] text-white" />
+            </span>
+            <span className="brand-name">
+              CourtMate
+              <small className="brand-tagline">เพื่อนครบ คู่พร้อม</small>
+            </span>
           </button>
           <div className="flex items-center gap-2">
-            <span className="rounded-md border border-[#e0e8d8] bg-club-50 px-2 py-1 text-[9px] text-[#809568]">
-              v0.5
-            </span>
+            <span className="version-badge">v0.6</span>
             <button
-              className="icon-btn !size-9"
+              className="icon-btn"
               aria-label="เริ่มก๊วนใหม่"
               onClick={() => c.setModal("reset")}
             >
@@ -193,12 +195,21 @@ export default function App() {
       <main className="app-workspace">
         <div className="screen-heading">
           <div>
-            <p className="eyebrow">YOUR POCKET CLUBHOUSE</p>
+            <p className="eyebrow">
+              {c.step === "group"
+                ? "01 / YOUR CREW"
+                : c.step === "play"
+                  ? "02 / ON COURT"
+                  : "03 / SPLIT THE BILL"}
+            </p>
             <h1>{titles[c.step]}</h1>
           </div>
-          <span className="flex items-center gap-1 text-[9px] text-[#94a184]">
-            <ShieldCheck size={13} />
-            <span>ไม่เก็บข้อมูล</span>
+          <span
+            className="step-counter"
+            aria-label={`ขั้นตอน ${steps.findIndex((s) => s.id === c.step) + 1} จาก 3`}
+          >
+            <strong>0{steps.findIndex((s) => s.id === c.step) + 1}</strong>
+            <span>/ 03</span>
           </span>
         </div>
         <div className="screen-content">
@@ -219,7 +230,7 @@ export default function App() {
                   <br />
                   แล้วไปตีด้วยกัน<span className="text-club-500">.</span>
                 </h2>
-                <p className="mt-2 text-xs leading-6 text-[#94a184]">
+                <p className="mt-2 text-xs leading-6 text-muted">
                   สร้างก๊วน เพิ่มชื่อและ Level
                   <br />
                   จับคู่และหารค่าใช้จ่ายได้ในที่เดียว
@@ -233,7 +244,7 @@ export default function App() {
                 </button>
                 <button
                   onClick={c.sample}
-                  className="mt-3 flex min-h-10 items-center justify-center gap-1.5 text-[11px] text-[#819b68]"
+                  className="mt-3 flex min-h-10 items-center justify-center gap-1.5 text-xs text-muted"
                 >
                   <Sparkles size={14} />
                   ลองด้วยรายชื่อตัวอย่าง
@@ -248,13 +259,13 @@ export default function App() {
                   </div>
                   <button
                     aria-label="เปลี่ยนชื่อก๊วน"
-                    className="icon-btn !size-9"
+                    className="icon-btn"
                     onClick={c.openGroup}
                   >
                     <Settings2 size={17} />
                   </button>
                   <button
-                    className="btn btn-primary !min-h-10 !px-3 !py-2 !text-xs"
+                    className="btn btn-primary"
                     onClick={c.openNewPlayer}
                     disabled={c.players.length >= MAX_PLAYERS}
                   >
@@ -266,7 +277,9 @@ export default function App() {
                   <h3>
                     เพื่อนร่วมก๊วน <span>{c.players.length} คน</span>
                   </h3>
-                  <span className="text-[9px] text-[#9baa8d]">Level 1–5</span>
+                  <span className="text-xs text-muted">
+                    แตะการ์ดเพื่อจัดการ
+                  </span>
                 </div>
                 <div className="panel-scroll" aria-label="รายชื่อผู้เล่น">
                   {c.players.length ? (
@@ -349,7 +362,7 @@ export default function App() {
                   <h2 className="truncate !text-sm">
                     {c.groupName || "ก๊วนของเรา"}
                   </h2>
-                  <p className="mt-1 text-[10px] text-[#96a585]">
+                  <p className="crew-meta">
                     {c.players.length} คน · เล่นจบ {c.history.length} เกม · รอบ{" "}
                     {c.round || "—"}
                   </p>
@@ -362,7 +375,7 @@ export default function App() {
                 >
                   <Settings2 size={14} />
                   {c.mode === "auto" ? "Auto" : "Custom"}
-                  <span className="text-[#a3b18d]">/</span>
+                  <span aria-hidden="true">/</span>
                   {c.courts} คอร์ท
                 </button>
               </div>
@@ -452,7 +465,7 @@ export default function App() {
                           <div className="teams-row">
                             {[m.a, m.b].map((team, t) => (
                               <div key={t} className="court-team">
-                                <span className="text-[9px] opacity-60">
+                                <span className="text-xs opacity-60">
                                   ทีม {t === 0 ? "A" : "B"}
                                 </span>
                                 {team.map((pid) => {
@@ -469,7 +482,7 @@ export default function App() {
                                         <strong className="block truncate text-xs font-medium">
                                           {p.name}
                                         </strong>
-                                        <span className="text-[8px] opacity-55">
+                                        <span className="text-xs opacity-55">
                                           L{p.level} · {p.games} เกม
                                         </span>
                                       </div>
@@ -495,21 +508,21 @@ export default function App() {
                     </div>
                   ) : (
                     <div className="empty-panel">
-                      <Shuttle className="h-20 w-16 rotate-[25deg] text-[#9bb77e]" />
+                      <Shuttle className="h-20 w-16 rotate-[25deg] text-muted" />
                       <h3>พร้อมลงสนามกันหรือยัง?</h3>
                       <p>
                         เลือก Auto หรือ Custom จากปุ่มตั้งค่าด้านบน
                         <br />
                         แล้วแตะ “จัดคู่พร้อมลงสนาม”
                       </p>
-                      <span className="mt-4 rounded-lg bg-club-50 px-3 py-2 text-[10px] text-[#8ca174]">
+                      <span className="mt-4 rounded-lg bg-club-50 px-3 py-2 text-xs text-muted">
                         Auto ให้คนที่เล่นน้อยได้ลงก่อน
                       </span>
                     </div>
                   ))}
                 {c.playView === "players" && (
                   <div className="rounded-xl border border-[#e2e9da] bg-white px-3">
-                    <div className="flex justify-between border-b border-[#e9eee1] py-3 text-[10px] text-[#95a788]">
+                    <div className="flex justify-between border-b border-[#e9eee1] py-3 text-xs text-muted">
                       <span>ผู้เล่น / Level</span>
                       <span>เกม / พร้อมเล่น</span>
                     </div>
@@ -529,7 +542,7 @@ export default function App() {
                               </strong>
                               <Pencil
                                 size={11}
-                                className="shrink-0 text-[#a1b28b]"
+                                className="shrink-0 text-muted"
                               />
                             </button>
                             <small>
@@ -552,11 +565,11 @@ export default function App() {
                                 ),
                               )
                             }
-                            className={`ml-2 h-6 w-10 shrink-0 rounded-full p-1 ${p.available ? "bg-[#82a35e]" : "bg-[#e1e6da]"}`}
+                            className="ready-switch"
                           >
-                            <span
-                              className={`block size-4 rounded-full bg-white transition-transform ${p.available ? "translate-x-4" : ""}`}
-                            />
+                            <span>
+                              <i />
+                            </span>
                           </button>
                         </div>
                       ))}
@@ -577,14 +590,12 @@ export default function App() {
                           className="border-t border-[#e9eee1] py-3"
                           key={h.id}
                         >
-                          <span className="text-[9px] text-[#9aaa8c]">
+                          <span className="text-xs text-muted">
                             รอบ {h.round} / คอร์ท {h.match.id}
                           </span>
                           <p className="mt-1 text-xs leading-6">
                             {h.match.a.map(c.nameFor).join(" + ")}{" "}
-                            <span className="mx-1 text-[9px] text-[#a3af96]">
-                              VS
-                            </span>{" "}
+                            <span className="mx-1 text-xs text-muted">VS</span>{" "}
                             {h.match.b.map(c.nameFor).join(" + ")}
                           </p>
                         </div>
@@ -612,13 +623,13 @@ export default function App() {
             <section className="cost-screen">
               <div className="cost-banner">
                 <div>
-                  <span className="text-[10px] text-[#a5bf95]">
+                  <span className="text-xs text-[#cfe3d7]">
                     ค่าใช้จ่ายทั้งหมด
                   </span>
                   <p className="mt-0.5 text-[30px] font-semibold leading-tight tracking-tight">
                     ฿{baht(c.summary?.bill.totalCents || estimate)}
                   </p>
-                  <span className="mt-2 block text-[9px] text-[#a5bf95]">
+                  <span className="mt-2 block text-xs text-[#cfe3d7]">
                     {c.costFields.hours} ชม. · {c.costFields.courts} คอร์ท · ฿
                     {c.costFields.rate}/คอร์ท/ชม.
                   </span>
@@ -626,7 +637,7 @@ export default function App() {
                 <button
                   aria-label="ตั้งค่าค่าใช้จ่าย"
                   onClick={() => c.setModal("costSettings")}
-                  className="flex size-10 items-center justify-center rounded-xl bg-white/10 text-lime-pop"
+                  className="flex size-11 items-center justify-center rounded-xl bg-white/10 text-lime-pop"
                 >
                   <Settings2 size={20} />
                 </button>
@@ -664,7 +675,7 @@ export default function App() {
                 <h3>หารตามจำนวนเกม</h3>
                 {c.summary && (
                   <button
-                    className="flex min-h-8 items-center gap-1 rounded-lg bg-club-50 px-2 text-[10px] text-club-600"
+                    className="flex min-h-11 items-center gap-1 rounded-lg bg-club-50 px-2 text-xs text-club-600"
                     onClick={() => c.setModal("billDetails")}
                     aria-label="ดูวิธีคิดราคาต่อเกม"
                   >
@@ -807,7 +818,7 @@ export default function App() {
                   onChange={(e) => c.setGroupDraft(e.target.value)}
                 />
               </Label>
-              <p className="mt-3 text-[11px] leading-6 text-[#96a688]">
+              <p className="mt-3 text-xs leading-6 text-muted">
                 ชื่อก๊วนใช้กับรอบเล่นนี้และรูปสรุปค่าใช้จ่าย
               </p>
               <button className="btn btn-primary mt-5 w-full">
@@ -824,7 +835,7 @@ export default function App() {
                   <h3 className="break-words text-base font-medium">
                     {c.selectedPlayer.name}
                   </h3>
-                  <p className="mt-1 text-xs text-[#8ca078]">
+                  <p className="mt-1 text-xs text-muted">
                     Level {c.selectedPlayer.level} ·{" "}
                     {levelNames[c.selectedPlayer.level]} ·{" "}
                     {c.selectedPlayer.games} เกม
@@ -900,7 +911,7 @@ export default function App() {
                   </select>
                 </Label>
               </div>
-              <p className="mt-3 text-[10px] leading-6 text-[#96a688]">
+              <p className="mt-3 text-xs leading-6 text-muted">
                 {c.editingPlayerId !== null
                   ? "แก้ชื่อและ Level ได้ โดยจำนวนเกมเดิมไม่เปลี่ยน"
                   : `มี ${c.players.length} คนในก๊วน · เพิ่มต่อได้ทันทีหลังสำเร็จ`}
@@ -1043,7 +1054,7 @@ export default function App() {
                   />
                 </Label>
               </div>
-              <p className="mt-3 text-[10px] leading-6 text-[#96a688]">
+              <p className="mt-3 text-xs leading-6 text-muted">
                 ค่าสนาม = ชั่วโมง × คอร์ท × ราคาต่อชั่วโมง
               </p>
               <button className="btn btn-primary mt-5 w-full">
@@ -1093,7 +1104,7 @@ export default function App() {
                   </select>
                 </Label>
               </div>
-              <p className="mt-3 text-[11px] leading-6 text-[#96a688]">
+              <p className="mt-3 text-xs leading-6 text-muted">
                 Auto ให้คนที่เล่นน้อยได้ลงก่อน แล้วบาลานซ์ Level
                 ของแต่ละคู่ภายในคอร์ท
               </p>
@@ -1116,7 +1127,7 @@ export default function App() {
                     className="rounded-xl border border-[#e3eadb] p-3"
                     key={court}
                   >
-                    <h3 className="mb-3 text-xs font-medium text-[#86a06c]">
+                    <h3 className="mb-3 text-xs font-medium text-muted">
                       คอร์ท {court + 1}
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
@@ -1169,7 +1180,7 @@ export default function App() {
           )}
           {c.modal === "editMatch" && (
             <form onSubmit={c.applyMatchEdit}>
-              <p className="mb-4 text-xs leading-6 text-[#92a47d]">
+              <p className="mb-4 text-xs leading-6 text-muted">
                 เปลี่ยนผู้เล่นได้ก่อนจบเกม
                 คนในคอร์ทอื่นที่ยังเล่นอยู่จะไม่อยู่ในตัวเลือก
               </p>
@@ -1229,7 +1240,7 @@ export default function App() {
                 ...c.summary.costs.extras.map((e) => [e.name, e.cents]),
               ].map(([label, cents], i) => (
                 <div
-                  className="flex justify-between gap-4 py-2 text-xs text-[#81966c]"
+                  className="flex justify-between gap-4 py-2 text-xs text-muted"
                   key={i}
                 >
                   <span className="min-w-0 break-words">{label}</span>
@@ -1257,7 +1268,7 @@ export default function App() {
                 </strong>
                 <span>ราคาเฉลี่ยต่อคนต่อเกม · หารด้วยผลรวมเกมของผู้เล่น</span>
               </div>
-              <p className="mt-4 text-[10px] leading-6 text-[#91a17d]">
+              <p className="mt-4 text-xs leading-6 text-muted">
                 1 แมตช์ประเภทคู่ = ผู้เล่น 4 คน × คนละ 1 เกม
                 <br />
                 เล่นจบ {c.history.length} แมตช์ = ผลรวมเกมของผู้เล่น{" "}
@@ -1279,7 +1290,7 @@ export default function App() {
                   </div>
                 ))}
               </div>
-              <p className="mt-4 text-[10px] leading-6 text-[#91a17d]">
+              <p className="mt-4 text-xs leading-6 text-muted">
                 ราคาเฉลี่ยแสดงทศนิยม 2 ตำแหน่ง คำนวณจริงก่อนปัดเศษรายคน
                 แล้วกระจายเศษสตางค์ให้ยอดรวมตรงกัน
               </p>
@@ -1294,7 +1305,7 @@ export default function App() {
           )}
           {c.modal === "reset" && (
             <>
-              <p className="text-sm leading-7 text-[#879b72]">
+              <p className="text-sm leading-7 text-muted">
                 รายชื่อ จำนวนเกม และค่าใช้จ่ายรอบนี้จะถูกล้าง
                 ดาวน์โหลดรูปสรุปก่อนเริ่มใหม่นะ
               </p>
