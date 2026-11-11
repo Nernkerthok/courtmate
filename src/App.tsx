@@ -5,6 +5,7 @@ import {
   Download,
   Flag,
   Image as ImageIcon,
+  MoreHorizontal,
   Plus,
   Pencil,
   RotateCcw,
@@ -13,6 +14,7 @@ import {
   ShieldCheck,
   Shuffle,
   Sparkles,
+  Trash2,
   Users,
   Wallet,
   X,
@@ -108,6 +110,7 @@ export default function App() {
   const modalTitles = {
     group: c.groupCreated ? "เปลี่ยนชื่อก๊วน" : "สร้างก๊วนใหม่",
     player: c.editingPlayerId !== null ? "แก้ไขผู้เล่น" : "เพิ่มเพื่อนเข้าก๊วน",
+    playerActions: "จัดการผู้เล่น",
     expense: "เพิ่มค่าใช้จ่าย",
     costSettings: "ตั้งค่าค่าใช้จ่าย",
     playSettings: "รูปแบบการจับคู่",
@@ -175,7 +178,7 @@ export default function App() {
           </button>
           <div className="flex items-center gap-2">
             <span className="rounded-md border border-[#e0e8d8] bg-club-50 px-2 py-1 text-[9px] text-[#809568]">
-              v0.4
+              v0.5
             </span>
             <button
               className="icon-btn !size-9"
@@ -267,66 +270,56 @@ export default function App() {
                 </div>
                 <div className="panel-scroll" aria-label="รายชื่อผู้เล่น">
                   {c.players.length ? (
-                    <div className="roster-grid">
-                      {c.players.map((p) => (
-                        <article className="player-tile" key={p.id}>
-                          <Avatar p={p} />
-                          <div className="min-w-0 flex-1">
-                            <button
-                              className="flex max-w-full items-center gap-1 text-left"
-                              aria-label={`แก้ไข ${p.name}`}
-                              onClick={() => c.openEditPlayer(p.id)}
-                            >
-                              <h3 className="truncate text-sm font-medium">
-                                {p.name}
-                              </h3>
-                              <Pencil
-                                size={11}
-                                className="shrink-0 text-[#a1b28b]"
-                              />
-                            </button>
-                            <label className="flex items-center gap-1 text-[9px] text-[#8ea17a]">
-                              L
-                              <select
-                                aria-label={`Level ${p.name}`}
-                                value={p.level}
-                                onChange={(e) =>
-                                  c.setPlayers((ps) =>
-                                    ps.map((x) =>
-                                      x.id === p.id
-                                        ? {
-                                            ...x,
-                                            level: Number(e.target.value),
-                                          }
-                                        : x,
-                                    ),
-                                  )
-                                }
-                                className="min-h-8 min-w-0 max-w-[135px] bg-transparent text-[11px] text-club-600"
-                              >
-                                {levelNames.slice(1).map((l, i) => (
-                                  <option key={l} value={i + 1}>
-                                    {i + 1} · {l}
-                                  </option>
-                                ))}
-                              </select>
-                            </label>
-                          </div>
-                          <button
-                            aria-label={`ลบ ${p.name}`}
-                            disabled={p.games > 0}
-                            title={
-                              p.games
-                                ? "เก็บไว้เพื่อหารค่าใช้จ่าย"
-                                : "ลบผู้เล่น"
-                            }
-                            className="icon-btn !size-8"
-                            onClick={() => c.removePlayer(p.id)}
+                    <div className="skill-groups">
+                      {levelNames.slice(1).map((label, index) => {
+                        const skill = index + 1;
+                        const members = c.players.filter(
+                          (p) => p.level === skill,
+                        );
+                        if (!members.length) return null;
+                        return (
+                          <section
+                            className="skill-group"
+                            key={skill}
+                            aria-labelledby={`skill-heading-${skill}`}
                           >
-                            <X size={14} />
-                          </button>
-                        </article>
-                      ))}
+                            <div className="skill-group-heading">
+                              <h3 id={`skill-heading-${skill}`}>
+                                <span
+                                  className={`skill-number skill-tone-${skill}`}
+                                >
+                                  L{skill}
+                                </span>
+                                <span>{label}</span>
+                              </h3>
+                              <span>{members.length} คน</span>
+                            </div>
+                            <div className="roster-grid">
+                              {members.map((p) => (
+                                <button
+                                  type="button"
+                                  className="player-cell"
+                                  key={p.id}
+                                  aria-label={`จัดการ ${p.name}`}
+                                  aria-haspopup="dialog"
+                                  onClick={() => c.openPlayerActions(p.id)}
+                                  title={p.name}
+                                >
+                                  <Avatar p={p} />
+                                  <span className="player-cell-info">
+                                    <strong>{p.name}</strong>
+                                    <small>{p.games} เกมที่เล่น</small>
+                                  </span>
+                                  <MoreHorizontal
+                                    size={15}
+                                    className="player-cell-menu"
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                          </section>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="empty-panel">
@@ -822,6 +815,57 @@ export default function App() {
                 {c.groupCreated ? "ใช้ชื่อนี้" : "สร้างก๊วน"}
               </button>
             </form>
+          )}
+          {c.modal === "playerActions" && c.selectedPlayer && (
+            <div className="player-actions">
+              <div className="selected-player">
+                <Avatar p={c.selectedPlayer} />
+                <div className="min-w-0">
+                  <h3 className="break-words text-base font-medium">
+                    {c.selectedPlayer.name}
+                  </h3>
+                  <p className="mt-1 text-xs text-[#8ca078]">
+                    Level {c.selectedPlayer.level} ·{" "}
+                    {levelNames[c.selectedPlayer.level]} ·{" "}
+                    {c.selectedPlayer.games} เกม
+                  </p>
+                </div>
+              </div>
+              <button
+                className="btn btn-primary w-full"
+                onClick={() => c.openEditPlayer(c.selectedPlayer!.id)}
+              >
+                <Pencil size={17} />
+                แก้ไขชื่อ / Level
+              </button>
+              <button
+                className="btn player-delete-button w-full"
+                disabled={c.selectedPlayer.games > 0}
+                onClick={() => {
+                  c.removePlayer(c.selectedPlayer!.id);
+                  close();
+                }}
+              >
+                <Trash2 size={17} />
+                ลบผู้เล่น
+              </button>
+              {c.selectedPlayer.games > 0 ? (
+                <p className="player-action-note">
+                  ผู้เล่นมีเกมที่เล่นจบแล้ว แก้ชื่อและ Level ได้
+                  แต่เก็บรายชื่อไว้เพื่อให้ยอดหารครบ
+                </p>
+              ) : (
+                c.matches.some(
+                  (m) =>
+                    !m.done && [...m.a, ...m.b].includes(c.selectedPlayer!.id),
+                ) && (
+                  <p className="player-action-note">
+                    ผู้เล่นอยู่ในคอร์ทที่ยังไม่จบ
+                    หากลบจะยกเลิกคอร์ทที่เกี่ยวข้องโดยไม่นับเกม
+                  </p>
+                )
+              )}
+            </div>
           )}
           {c.modal === "player" && (
             <form onSubmit={c.addPlayer}>

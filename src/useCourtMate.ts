@@ -62,6 +62,7 @@ export function useCourtMate() {
     | "reset"
     | "group"
     | "player"
+    | "playerActions"
     | "expense"
     | "costSettings"
     | "playSettings"
@@ -152,6 +153,12 @@ export function useCourtMate() {
     setName(player.name);
     setLevel(player.level);
     setModal("player");
+  };
+  const selectedPlayer = players.find((p) => p.id === editingPlayerId);
+  const openPlayerActions = (pid: number) => {
+    if (!players.some((p) => p.id === pid)) return;
+    setEditingPlayerId(pid);
+    setModal("playerActions");
   };
   const removePlayer = (pid: number) => {
     const player = players.find((p) => p.id === pid);
@@ -492,6 +499,8 @@ export function useCourtMate() {
     editingPlayerId,
     openNewPlayer,
     openEditPlayer,
+    selectedPlayer,
+    openPlayerActions,
     removePlayer,
     editingMatchId,
     matchDraft,

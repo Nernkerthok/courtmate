@@ -231,28 +231,144 @@ body,
 }
 .roster-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
-.player-tile {
+.skill-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 2px;
+}
+.skill-group-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.skill-group-heading h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #77905f;
+}
+.skill-group-heading > span {
+  font-size: 9px;
+  color: #a0ad92;
+}
+.skill-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 29px;
+  height: 23px;
+  border-radius: 6px;
+  font-size: 9px;
+}
+.skill-tone-1 {
+  background: #eaf3df;
+  color: #87a36b;
+}
+.skill-tone-2 {
+  background: #e3eef2;
+  color: #7897a5;
+}
+.skill-tone-3 {
+  background: #f3eddc;
+  color: #a99a68;
+}
+.skill-tone-4 {
+  background: #eae3f1;
+  color: #9a83af;
+}
+.skill-tone-5 {
+  background: #f1e1e7;
+  color: #aa7a8c;
+}
+.player-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 66px;
+  padding: 10px 9px;
   background: white;
   border: 1px solid #e1e8d9;
   border-radius: 12px;
+  text-align: left;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.player-cell:hover {
+  background: #fafcf6;
+  border-color: #c2d5ac;
+}
+.player-cell > span:first-child {
+  width: 30px;
+  height: 30px;
+  font-size: 12px;
+}
+.player-cell-info {
+  min-width: 0;
+  flex: 1;
+  padding-right: 6px;
+}
+.player-cell-info strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+}
+.player-cell-info small {
+  display: block;
+  margin-top: 4px;
+  font-size: 8px;
+  color: #a0af91;
+}
+.player-cell-menu {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  color: #b0bca4;
+  width: 12px;
+  height: 12px;
+}
+.player-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.selected-player {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  min-width: 0;
+  gap: 12px;
+  padding: 15px;
+  background: #f4f8ee;
+  border: 1px solid #e4ecd9;
+  border-radius: 12px;
+  margin-bottom: 4px;
 }
-.player-tile label select {
-  min-height: 24px;
+.selected-player > span {
+  width: 44px;
+  height: 44px;
+  font-size: 17px;
+}
+.player-delete-button {
+  border: 1px solid #ecdacf;
+  background: #fcf5ef;
+  color: #ad7c64;
+}
+.player-action-note {
   font-size: 10px;
-}
-.player-tile {
-  padding: 8px 10px;
-}
-.player-tile h3 {
-  font-size: 12px;
+  color: #9aa78a;
+  line-height: 1.9;
 }
 .screen-note {
   flex-shrink: 0;
@@ -700,9 +816,11 @@ body,
   .screen-heading h1 {
     font-size: 27px;
   }
-  .roster-grid,
   .court-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .roster-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .club-strip {
     padding: 14px 16px;
@@ -732,6 +850,11 @@ body,
   }
   .screen-note {
     font-size: 10px;
+  }
+}
+@media (min-width: 900px) {
+  .roster-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 @media (max-height: 700px) {
