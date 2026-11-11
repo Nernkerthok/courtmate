@@ -1203,6 +1203,73 @@ button:not(:disabled):active {
 .count-row button:not(.ready-switch) {
   min-height: 44px;
 }
+.install-header-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  background: var(--color-club-50);
+  color: var(--color-club-800);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.install-header-button:hover {
+  background: var(--color-club-100);
+}
+.install-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.install-intro {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.install-intro img {
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+.install-intro h3 {
+  font-size: 18px;
+  font-weight: 600;
+}
+.install-intro p,
+.install-platform p,
+.install-platform ol {
+  font-size: 13px;
+  line-height: 1.9;
+  color: var(--color-muted);
+}
+.install-platform {
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  padding: 12px;
+}
+.install-platform h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.install-platform ol {
+  list-style: decimal;
+  padding-left: 20px;
+}
+.install-note {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--color-muted);
+}
+.install-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-club-800);
+  font-size: 14px;
+}
 .team-picker {
   display: flex;
   flex-direction: column;

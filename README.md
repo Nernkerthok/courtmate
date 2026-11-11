@@ -4,6 +4,16 @@
 
 ## ใช้งาน
 
+### ติดตั้งเป็นไอคอนบนเครื่อง (v0.7)
+
+แตะ **ติดตั้ง** ที่หัวเว็บ Android/คอมพิวเตอร์ที่รองรับจะแสดงปุ่มเรียกหน้าติดตั้งของเบราว์เซอร์ หากยังไม่มีปุ่ม ให้ใช้เมนู Chrome/Edge → ติดตั้งแอปหรือเพิ่มลงหน้าจอหลัก ส่วน iPhone/iPad เปิดใน Safari → แชร์ → เพิ่มไปยังหน้าจอโฮม → เปิดเป็นเว็บแอป (หากมี) → เพิ่ม
+
+เพิ่ม Web App Manifest, ไอคอน PNG 192/512, maskable icon และ Apple touch icon 180px ใช้ `id`, `scope` และ `start_url` แบบ relative จึงเปิดใต้ `/courtmate/` ได้ หลังติดตั้งจะเปิดเป็นหน้าต่างแอป การติดตั้งยังต้องใช้อินเทอร์เน็ตเมื่อเปิด และไม่เพิ่มการบันทึกรายชื่อหรือเกม ไม่มี service worker หรือ offline cache
+
+อ้างอิง: [PWA installation](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable), [Browser installation prompt](https://web.dev/learn/pwa/installation-prompt/), [iPhone Home Screen web app](https://support.apple.com/guide/iphone/iphea86e5236/ios)
+
+### จัดก๊วนและเล่น
+
 1. แตะ **สร้างก๊วนใหม่** ตั้งชื่อ แล้วแตะ **เพิ่มคน** เพื่อเพิ่มชื่อเล่นและ Level 1–5 อย่างน้อย 4 คน (สูงสุด 40 คน)
 2. หน้าจับคู่แตะปุ่มตั้งค่าเพื่อเลือก Auto หรือ Custom จัดประเภทคู่ 1–5 คอร์ท คนหนึ่งลงได้คอร์ทเดียวต่อรอบ
 3. กด **จบเกมคอร์ท … · นับเกม** หลังเล่นจริง จำนวนเกมของผู้เล่นทั้ง 4 คนจึงเพิ่ม ดูจำนวนเกมและย้อนเกมล่าสุดได้จากแท็บในหน้าเดียวกัน

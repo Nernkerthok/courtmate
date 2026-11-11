@@ -69,6 +69,7 @@ export function useCourtMate() {
     | "custom"
     | "editMatch"
     | "billDetails"
+    | "install"
     | null
   >(null);
   const dialog = useRef<HTMLDialogElement>(null);

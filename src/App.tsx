@@ -17,11 +17,13 @@ import {
   Trash2,
   Users,
   Wallet,
+  Smartphone,
   X,
 } from "lucide-react";
 import { type ReactNode } from "react";
 import { baht, gameRate, levelNames, MAX_PLAYERS, type Player } from "./domain";
 import { useCourtMate } from "./useCourtMate";
+import { useInstall } from "./useInstall";
 
 const steps = [
   { id: "group", label: "จัดก๊วน", icon: Users },
@@ -165,6 +167,7 @@ function Notice({
 
 export default function App() {
   const c = useCourtMate();
+  const installation = useInstall();
   const titles = {
     group: "จัดก๊วนของคุณ",
     play: "คู่พร้อม คอร์ทพร้อม!",
@@ -182,6 +185,7 @@ export default function App() {
     billDetails: "วิธีคิดราคาต่อเกม",
     image: "รูปสรุปพร้อมแชร์",
     reset: "เริ่มก๊วนใหม่?",
+    install: "เพิ่ม CourtMate ลงเครื่อง",
   };
   const estimate =
     Math.round(
@@ -245,7 +249,17 @@ export default function App() {
             </span>
           </button>
           <div className="flex items-center gap-2">
-            <span className="version-badge">v0.6.2</span>
+            <span className="version-badge hidden sm:inline">v0.7</span>
+            {!installation.installed && (
+              <button
+                className="install-header-button"
+                onClick={() => c.setModal("install")}
+                aria-label="ติดตั้ง CourtMate"
+              >
+                <Smartphone size={16} aria-hidden="true" />
+                ติดตั้ง
+              </button>
+            )}
             <button
               className="icon-btn"
               aria-label="เริ่มก๊วนใหม่"
@@ -875,6 +889,77 @@ export default function App() {
           </div>
         )}
         <div className="dialog-body">
+          {c.modal === "install" && (
+            <div className="install-guide">
+              <div className="install-intro">
+                <img src="./icons/icon-192.png" alt="" width="56" height="56" />
+                <div>
+                  <h3>CourtMate</h3>
+                  <p>แตะไอคอนบนหน้าจอหลัก แล้วเริ่มจัดก๊วนได้เลย</p>
+                </div>
+              </div>
+              {installation.installed ? (
+                <p className="install-status">
+                  <Check size={18} aria-hidden="true" />
+                  เปิดในโหมดแอปแล้ว
+                </p>
+              ) : (
+                (installation.available || installation.busy) && (
+                  <button
+                    className="btn btn-primary w-full"
+                    disabled={installation.busy}
+                    onClick={async () => {
+                      const outcome = await installation.install();
+                      if (outcome === "accepted") {
+                        close();
+                        c.notify(
+                          "ยืนยันการติดตั้งแล้ว เปิดจากไอคอน CourtMate หลังติดตั้งเสร็จ",
+                        );
+                      } else if (outcome === "failed")
+                        c.notify(
+                          "เปิดหน้าติดตั้งไม่ได้ ใช้วิธีเพิ่มหน้าจอหลักด้านล่างได้ครับ",
+                        );
+                    }}
+                  >
+                    <Download size={17} aria-hidden="true" />
+                    {installation.busy
+                      ? "กำลังเปิดหน้าติดตั้ง..."
+                      : "ติดตั้ง CourtMate"}
+                  </button>
+                )
+              )}
+              {!installation.installed && (
+                <>
+                  <section className="install-platform">
+                    <h3>iPhone / iPad</h3>
+                    <ol>
+                      <li>เปิดเว็บนี้ใน Safari</li>
+                      <li>แตะเมนูแชร์ แล้วเลือก “เพิ่มไปยังหน้าจอโฮม”</li>
+                      <li>เปิด “เปิดเป็นเว็บแอป” หากมี แล้วแตะ “เพิ่ม”</li>
+                    </ol>
+                  </section>
+                  <section className="install-platform">
+                    <h3>Android</h3>
+                    <p>
+                      เปิดใน Chrome แตะเมนู ⋮ แล้วเลือก “ติดตั้งแอป” หรือ
+                      “เพิ่มลงในหน้าจอหลัก”
+                    </p>
+                  </section>
+                  <section className="install-platform">
+                    <h3>คอมพิวเตอร์</h3>
+                    <p>
+                      เปิดใน Chrome หรือ Edge แล้วเลือกไอคอนติดตั้งที่แถบที่อยู่
+                      หรือเมนูติดตั้งแอปของเบราว์เซอร์
+                    </p>
+                  </section>
+                </>
+              )}
+              <p className="install-note">
+                ใช้เน็ตเมื่อเปิดแอป · รายชื่อและเกมอยู่เฉพาะรอบที่เปิดใช้งาน
+                การติดตั้งไม่ได้เก็บข้อมูลไว้หลังปิดหรือรีโหลด
+              </p>
+            </div>
+          )}
           {c.modal === "group" && (
             <form onSubmit={c.createGroup}>
               <Label title="ชื่อก๊วน">
