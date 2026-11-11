@@ -46,7 +46,7 @@ export function useCourtMate() {
   const [costFields, setCostFields] = useState({
     hours: "2",
     courts: "1",
-    rate: "200",
+    rate: "180",
     shuttle: "0",
   });
   const [extras, setExtras] = useState<
@@ -436,7 +436,7 @@ export function useCourtMate() {
     setSlots(Array(4).fill(0));
     setSummary(null);
     setExtras([]);
-    setCostFields({ hours: "2", courts: "1", rate: "200", shuttle: "0" });
+    setCostFields({ hours: "2", courts: "1", rate: "180", shuttle: "0" });
     setModal(null);
     setStep("group");
     setImageUrl("");
