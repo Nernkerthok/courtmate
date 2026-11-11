@@ -245,7 +245,7 @@ export default function App() {
             </span>
           </button>
           <div className="flex items-center gap-2">
-            <span className="version-badge">v0.6.1</span>
+            <span className="version-badge">v0.6.2</span>
             <button
               className="icon-btn"
               aria-label="เริ่มก๊วนใหม่"
@@ -457,7 +457,7 @@ export default function App() {
                     },
                     {
                       id: "players",
-                      label: "จำนวนเกม",
+                      label: "ผู้เล่น",
                       count: c.players.length,
                     },
                     {
@@ -470,12 +470,18 @@ export default function App() {
                   <button
                     key={v.id}
                     role="tab"
+                    aria-label={
+                      v.id === "players" ? `ผู้เล่น ${v.count} คน` : undefined
+                    }
                     aria-selected={c.playView === v.id}
                     onClick={() => c.setPlayView(v.id)}
                     className={c.playView === v.id ? "selected" : ""}
                   >
                     {v.label}
-                    <span>{v.count}</span>
+                    <span>
+                      {v.count}
+                      {v.id === "players" ? " คน" : ""}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -678,7 +684,7 @@ export default function App() {
                   ? `พร้อมเล่น ${c.available} คน ต้องการ ${c.courts * 4} คน`
                   : c.playView === "players"
                     ? "ปิดพร้อมเล่นเมื่อพัก · นับเฉพาะเกมที่กดจบแล้ว"
-                    : "แตะ “จำนวนเกม” เพื่อดูว่าใครลงเล่นไปแล้วบ้าง"}
+                    : "แตะ “ผู้เล่น” เพื่อดูจำนวนเกมและเลือกคนที่พร้อมเล่น"}
               </div>
             </section>
           )}
