@@ -1,0 +1,14 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {autoPair,completeMatch,calculateBill} from '../.test-build/domain.js';
+const fixtures=JSON.parse(fs.readFileSync(new URL('./billing-cases.json',import.meta.url),'utf8'));
+const players=(games)=>games.map((games,i)=>({id:i+1,name:`คน${i+1}`,games,level:i%5+1,available:true}));
+for(const f of fixtures)test(f.name,()=>{const b=calculateBill(players(f.games),f.costs);assert.deepEqual(b.rows.map(p=>p.cents),f.expected);assert.equal(b.totalCents,f.total);assert.equal(b.rows.reduce((s,r)=>s+r.cents,0),f.total);});
+test('auto prioritizes fewer games, excludes resting players and never repeats a player',()=>{const ps=players([8,0,0,0,0,0,0,0,0,0]);ps[1].available=false;const ms=autoPair(ps,2,()=>0.5);const ids=ms.flatMap(m=>[...m.a,...m.b]);assert.equal(new Set(ids).size,8);assert.ok(!ids.includes(1));assert.ok(!ids.includes(2));});
+test('skill pairing minimizes the difference of team totals inside a court',()=>{const ps=players([0,0,0,0]);ps.forEach((p,i)=>p.level=[5,4,2,1][i]);const [m]=autoPair(ps,1,()=>0.5);const level=id=>ps.find(p=>p.id===id).level;assert.equal(m.a.reduce((s,id)=>s+level(id),0),6);assert.equal(m.b.reduce((s,id)=>s+level(id),0),6);});
+test('a game increments exactly four participants, and finished games do not increment again',()=>{const ps=players([0,0,0,0,0]);const m={id:1,a:[1,2],b:[3,4],done:false};const next=completeMatch(ps,m);assert.deepEqual(next.map(p=>p.games),[1,1,1,1,0]);assert.equal(completeMatch(next,{...m,done:true}),next);});
+test('invalid duplicate custom teams and insufficient players fail',()=>{assert.throws(()=>completeMatch(players([0,0,0,0]),{id:1,a:[1,2],b:[2,4],done:false}));assert.throws(()=>autoPair(players([0,0,0]),1));});
+test('negative or fractional game counts and invalid costs fail',()=>{const f=fixtures[0];assert.throws(()=>calculateBill(players([-1,1]),f.costs));assert.throws(()=>calculateBill(players([1.5,1]),f.costs));assert.throws(()=>calculateBill(players([1,1]),{...f.costs,shuttleCostCents:-1}));});
+test('no games means no accidental equal split',()=>{const b=calculateBill(players([0,0]),fixtures[0].costs);assert.equal(b.totalGames,0);assert.deepEqual(b.rows.map(p=>p.cents),[0,0]);});
+test('arbitrary weighted splits reconcile exactly and keep non-players at zero',()=>{for(let total=1;total<300;total++){const b=calculateBill(players([3,1,7,0,2]),{minutes:0,courts:1,courtRateCents:0,shuttleCostCents:total,extras:[]});assert.equal(b.rows.reduce((s,p)=>s+p.cents,0),total);assert.equal(b.rows[3].cents,0);}});

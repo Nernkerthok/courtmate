@@ -1,0 +1,134 @@
+import { baht, type Bill, type CostInput } from "./domain";
+export async function createBillImage(
+  name: string,
+  bill: Bill,
+  costs: CostInput,
+): Promise<Blob> {
+  await document.fonts.ready;
+  const canvas = document.createElement("canvas");
+  const lineItems = [
+    ["ค่าสนาม", bill.courtCents] as const,
+    ["ค่าลูกแบด", costs.shuttleCostCents] as const,
+    ...costs.extras.map((e) => [e.name, e.cents] as const),
+  ];
+  const width = 720;
+  const height = 570 + lineItems.length * 44 + bill.rows.length * 56;
+  canvas.width = width * 2;
+  canvas.height = height * 2;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("อุปกรณ์นี้ไม่รองรับการสร้างภาพ");
+  ctx.scale(2, 2);
+  ctx.fillStyle = "#f5f7f2";
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = "#173f32";
+  ctx.fillRect(0, 0, width, 200);
+  const text = (
+    s: string,
+    x: number,
+    y: number,
+    size = 22,
+    color = "#294b39",
+    bold = false,
+  ) => {
+    ctx.font = `${bold ? 600 : 400} ${size}px "IBM Plex Sans Thai", sans-serif`;
+    ctx.fillStyle = color;
+    ctx.fillText(s, x, y);
+  };
+  const right = (
+    s: string,
+    y: number,
+    size = 22,
+    color = "#294b39",
+    bold = false,
+  ) => {
+    ctx.textAlign = "right";
+    text(s, 668, y, size, color, bold);
+    ctx.textAlign = "left";
+  };
+  const fit = (s: string, max: number) => {
+    ctx.font = '400 22px "IBM Plex Sans Thai", sans-serif';
+    let result = s;
+    while (result.length > 0 && ctx.measureText(result).width > max)
+      result = result.slice(0, -1);
+    return result === s ? s : result + "…";
+  };
+  text("COURTMATE / สรุปค่าใช้จ่าย", 50, 54, 18, "#d6f68b", true);
+  text(fit(name || "ก๊วนแบดมินตัน", 600), 50, 109, 30, "#fff", true);
+  text(
+    new Date().toLocaleDateString("th-TH", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }),
+    50,
+    158,
+    18,
+    "#acc5af",
+  );
+  let y = 250;
+  text("รายการค่าใช้จ่าย", 50, y, 22, "#294b39", true);
+  y += 43;
+  for (const [label, amount] of lineItems) {
+    text(fit(label, 420), 50, y, 20, "#7b8c74");
+    right(`฿${baht(amount)}`, y, 20);
+    y += 44;
+  }
+  ctx.strokeStyle = "#dfe6d6";
+  ctx.beginPath();
+  ctx.moveTo(50, y - 17);
+  ctx.lineTo(670, y - 17);
+  ctx.stroke();
+  text("รวมทั้งหมด", 50, y + 15, 22, "#294b39", true);
+  right(`฿${baht(bill.totalCents)}`, y + 15, 28, "#295d3d", true);
+  y += 62;
+  text(
+    `หารตามจำนวนเกม · ผลรวมเกมของทุกคน ${bill.totalGames}`,
+    50,
+    y,
+    17,
+    "#7b8c74",
+  );
+  y += 38;
+  ctx.fillStyle = "#e5edd9";
+  ctx.fillRect(40, y - 26, 640, 45);
+  text("ผู้เล่น", 55, y + 5, 18, "#527042", true);
+  ctx.textAlign = "center";
+  text("เกม", 455, y + 5, 18, "#527042", true);
+  ctx.textAlign = "left";
+  right("ยอดชำระ (บาท)", y + 5, 18, "#527042", true);
+  y += 56;
+  for (const row of bill.rows) {
+    text(fit(row.name, 340), 55, y, 21);
+    ctx.textAlign = "center";
+    text(String(row.games), 455, y, 21);
+    ctx.textAlign = "left";
+    right(baht(row.cents), y, 22, "#294b39", true);
+    ctx.strokeStyle = "#e6ebdf";
+    ctx.beginPath();
+    ctx.moveTo(50, y + 19);
+    ctx.lineTo(670, y + 19);
+    ctx.stroke();
+    y += 56;
+  }
+  text(
+    `เวลา ${costs.minutes / 60} ชม. · ${costs.courts} คอร์ท · ฿${baht(costs.courtRateCents)}/คอร์ท/ชม.`,
+    50,
+    y + 8,
+    15,
+    "#8b9b7c",
+  );
+  text(
+    "ยอดต่อคน = ค่าใช้จ่ายรวม × เกมที่เล่น ÷ ผลรวมเกมของทุกคน",
+    50,
+    y + 36,
+    15,
+    "#8b9b7c",
+  );
+  text("COURTMATE · ตีด้วยกัน มันส์กว่า", 50, y + 73, 15, "#6a8555", true);
+  return new Promise((resolve, reject) =>
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error("สร้างภาพไม่สำเร็จ"))),
+      "image/png",
+    ),
+  );
+}

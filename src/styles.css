@@ -1,0 +1,77 @@
+@import "tailwindcss";
+@theme {
+  --font-sans: "IBM Plex Sans Thai", sans-serif;
+  --color-club-50: #f1f6eb;
+  --color-club-100: #e5eed9;
+  --color-club-200: #d6e7bb;
+  --color-club-500: #709957;
+  --color-club-600: #517b3f;
+  --color-club-700: #305c3e;
+  --color-club-800: #1e4d38;
+  --color-club-900: #163f32;
+  --color-lime-pop: #d6f68b;
+}
+@layer base {
+  body {
+    @apply m-0 bg-[#f5f7f3] text-club-900 antialiased;
+  }
+  button,
+  input,
+  select {
+    font: inherit;
+  }
+  button {
+    @apply cursor-pointer;
+  }
+  button:disabled {
+    @apply cursor-not-allowed opacity-40;
+  }
+  button,
+  a,
+  input,
+  select {
+    -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-3 outline-club-500;
+  }
+  dialog::backdrop {
+    background: #102c2585;
+    backdrop-filter: blur(4px);
+  }
+}
+@layer components {
+  .card {
+    @apply rounded-2xl border border-[#e4eadf] bg-white;
+  }
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-colors disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply bg-club-800 text-white hover:bg-club-900;
+  }
+  .btn-secondary {
+    @apply border border-[#dce5d3] bg-white text-club-700 hover:bg-club-50;
+  }
+  .field {
+    @apply min-h-12 w-full min-w-0 rounded-xl border border-[#dce4d5] bg-white px-3 py-2.5 text-base text-club-900;
+  }
+  .caption {
+    @apply mb-2 block text-xs font-medium text-[#7b8c74];
+  }
+  .eyebrow {
+    @apply text-[9px] font-semibold tracking-[.2em] text-[#819474];
+  }
+  .icon-btn {
+    @apply inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-[#879878] hover:bg-club-50;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

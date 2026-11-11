@@ -1,0 +1,7 @@
+[
+ {"name":"weighted shares and a non-player","games":[1,2,3,0],"costs":{"minutes":120,"courts":2,"courtRateCents":20000,"shuttleCostCents":30000,"extras":[{"name":"น้ำ","cents":10000}]},"expected":[20000,40000,60000,0],"total":120000},
+ {"name":"one satang cannot be lost","games":[1,1,1],"costs":{"minutes":0,"courts":1,"courtRateCents":0,"shuttleCostCents":10000,"extras":[]},"expected":[3334,3333,3333],"total":10000},
+ {"name":"zero cost with played games","games":[1,5,0],"costs":{"minutes":0,"courts":1,"courtRateCents":0,"shuttleCostCents":0,"extras":[]},"expected":[0,0,0],"total":0},
+ {"name":"fractional hours and satang input","games":[1,2,0],"costs":{"minutes":90,"courts":1,"courtRateCents":10001,"shuttleCostCents":0,"extras":[]},"expected":[5001,10001,0],"total":15002},
+ {"name":"one satang distributed among two players","games":[0,1,1],"costs":{"minutes":0,"courts":1,"courtRateCents":0,"shuttleCostCents":1,"extras":[]},"expected":[0,1,0],"total":1}
+]

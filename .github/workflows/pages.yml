@@ -1,0 +1,52 @@
+name: Test and deploy GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm test
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  api-test:
+    runs-on: ubuntu-latest
+    container: composer:2
+    steps:
+      - uses: actions/checkout@v4
+      - run: php prepare.php
+        working-directory: backend
+      - run: composer install --no-interaction --prefer-dist
+        working-directory: backend
+      - run: composer audit --no-interaction
+        working-directory: backend
+      - run: composer test
+        working-directory: backend
+  deploy:
+    needs: [build, api-test]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
