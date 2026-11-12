@@ -352,7 +352,7 @@ export default function App() {
             </span>
           </button>
           <div className="flex items-center gap-2">
-            <span className="version-badge hidden sm:inline">v0.8</span>
+            <span className="version-badge hidden sm:inline">v0.8.1</span>
             {!installation.installed && (
               <button
                 className="install-header-button"
@@ -399,8 +399,8 @@ export default function App() {
               <section className="welcome-card">
                 <div className="welcome-art">
                   <img
-                    src="./art/badminton-friends.webp"
-                    alt="เพื่อนเล่นแบดมินตันด้วยกันในสนาม"
+                    src="./art/badminton-player.webp"
+                    alt="ผู้เล่นแบดมินตันใต้ท้องฟ้าสีฟ้า"
                     width="960"
                     height="640"
                     fetchPriority="high"
@@ -447,7 +447,7 @@ export default function App() {
               <section className="roster-screen">
                 <img
                   className="scene-strip"
-                  src="./art/badminton-friends.webp"
+                  src="./art/badminton-duo.webp"
                   alt=""
                   width="960"
                   height="640"
@@ -559,7 +559,7 @@ export default function App() {
             <section className="play-screen">
               <img
                 className="scene-strip"
-                src="./art/badminton-friends.webp"
+                src="./art/badminton-duo.webp"
                 alt=""
                 width="960"
                 height="640"
