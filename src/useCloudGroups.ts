@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { supabase } from "./supabase";
+import { googleProviderEnabled, initialAuthReturn, supabase } from "./supabase";
 import {
   parseSnapshot,
   snapshotFingerprint,
@@ -8,6 +8,12 @@ import {
 } from "./snapshot";
 import { buildInviteUrl } from "./invites";
 import { authErrorMessage } from "./authErrors";
+import {
+  clearAuthDraft,
+  cleanAuthCallback,
+  keepAuthDraft,
+  takeAuthDraft,
+} from "./authRedirect";
 
 export type SavedGroup = {
   id: string;
@@ -23,6 +29,7 @@ export function useCloudGroups(options: {
   snapshot: CourtSnapshot | null;
   onLoad: (value: CourtSnapshot) => void;
   onAccountClosed: () => void;
+  onAuthReturn: () => void;
   notify: (message: string) => void;
 }) {
   const latest = useRef(options);
@@ -30,7 +37,7 @@ export function useCloudGroups(options: {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(Boolean(supabase));
   const [busy, setBusy] = useState<
-    "save" | "open" | "email" | "logout" | "invite" | "revoke" | null
+    "save" | "open" | "email" | "google" | "logout" | "invite" | "revoke" | null
   >(null);
   const locked = useRef(false);
   const account = useRef<string | null>(null);
@@ -46,6 +53,13 @@ export function useCloudGroups(options: {
   const [emailSent, setEmailSent] = useState(false);
   const [authError, setAuthError] = useState("");
   const [resendAt, setResendAt] = useState(0);
+  const [googleStatus, setGoogleStatus] = useState<
+    "checking" | "enabled" | "disabled" | "error"
+  >("checking");
+  const returnDraft = useRef<ReturnType<typeof takeAuthDraft> | undefined>(
+    undefined,
+  );
+  const restoredDraft = useRef(false);
   const [invite, setInvite] = useState<{
     url: string;
     expiresAt: string;
@@ -61,9 +75,60 @@ export function useCloudGroups(options: {
   };
   const notify = (message: string) => latest.current.notify(message);
 
+  const checkGoogle = async (signal?: AbortSignal) => {
+    setGoogleStatus("checking");
+    try {
+      const enabled = await googleProviderEnabled(signal);
+      if (!signal?.aborted) setGoogleStatus(enabled ? "enabled" : "disabled");
+      return enabled;
+    } catch {
+      if (!signal?.aborted) setGoogleStatus("error");
+      return false;
+    }
+  };
+  useEffect(() => {
+    if (!supabase) return;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      controller.abort();
+      setGoogleStatus("error");
+    }, 10000);
+    void checkGoogle(controller.signal).finally(() => clearTimeout(timeout));
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    const resumed = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      locked.current = false;
+      setBusy(null);
+      try {
+        clearAuthDraft(sessionStorage);
+      } catch {
+        /* Storage may be blocked. */
+      }
+    };
+    window.addEventListener("pageshow", resumed);
+    return () => window.removeEventListener("pageshow", resumed);
+  }, []);
+
   useEffect(() => {
     if (!supabase) return;
     let live = true;
+    if (returnDraft.current === undefined) {
+      try {
+        returnDraft.current = takeAuthDraft(sessionStorage);
+      } catch {
+        returnDraft.current = null;
+      }
+    }
+    if (returnDraft.current?.snapshot && !restoredDraft.current) {
+      restoredDraft.current = true;
+      latest.current.onLoad(returnDraft.current.snapshot);
+    }
     const applyUser = (next: User | null) => {
       if (!live) return;
       if (account.current !== (next?.id ?? null)) {
@@ -89,20 +154,38 @@ export function useCloudGroups(options: {
     } = supabase.auth.onAuthStateChange((_event, session) =>
       applyUser(session?.user ?? null),
     );
-    supabase.auth
-      .getSession()
-      .then(({ data, error }) => {
-        if (error) {
-          if (live) {
-            setAuthLoading(false);
-            setAuthError(authErrorMessage(error));
-            notify("ตรวจการเข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่");
-          }
-        } else applyUser(data.session?.user ?? null);
-      })
-      .catch(() => {
-        if (live) setAuthLoading(false);
-      });
+    void (async () => {
+      try {
+        const initialized = await supabase.auth.initialize();
+        const { data, error } = await supabase.auth.getSession();
+        if (!live) return;
+        applyUser(data.session?.user ?? null);
+        const failure = initialAuthReturn.error
+          ? { code: initialAuthReturn.error }
+          : initialized.error || error;
+        const returning =
+          initialAuthReturn.returning || Boolean(returnDraft.current);
+        if (failure || (returning && !data.session)) {
+          setAuthError(authErrorMessage(failure));
+        } else if (returning && data.session) {
+          setAuthError("");
+          notify("เข้าสู่ระบบสำเร็จ กดบันทึกเพื่อเก็บก๊วนออนไลน์ได้เลย");
+        }
+        if (returning || failure) latest.current.onAuthReturn();
+        if (initialAuthReturn.returning)
+          window.history.replaceState(
+            null,
+            "",
+            cleanAuthCallback(location.href),
+          );
+      } catch {
+        if (live) {
+          setAuthLoading(false);
+          setAuthError(authErrorMessage(null));
+          latest.current.onAuthReturn();
+        }
+      }
+    })();
     return () => {
       live = false;
       subscription.unsubscribe();
@@ -300,6 +383,53 @@ export function useCloudGroups(options: {
       setBusy(null);
     }
   };
+  const signInGoogle = async () => {
+    if (!supabase || locked.current || account.current) return;
+    locked.current = true;
+    setBusy("google");
+    setAuthError("");
+    let navigating = false;
+    try {
+      if (!(await checkGoogle())) {
+        setAuthError(
+          "Google ยังไม่พร้อมใช้งาน ลองตรวจความพร้อมอีกครั้งหรือติดต่อผู้ดูแล",
+        );
+        return;
+      }
+      try {
+        keepAuthDraft(sessionStorage, latest.current.snapshot);
+      } catch {
+        setAuthError(
+          "เบราว์เซอร์นี้เก็บก๊วนชั่วคราวไม่ได้ กรุณาเปิดใน Chrome หรือ Safari แล้วลองใหม่",
+        );
+        return;
+      }
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${location.origin}${location.pathname}`,
+          scopes: "openid email profile",
+          queryParams: { prompt: "select_account" },
+          skipBrowserRedirect: true,
+        },
+      });
+      if (error || !data.url) throw error;
+      location.assign(data.url);
+      navigating = true;
+    } catch (error) {
+      try {
+        clearAuthDraft(sessionStorage);
+      } catch {
+        /* Storage may be blocked. */
+      }
+      setAuthError(authErrorMessage(error));
+    } finally {
+      if (!navigating) {
+        locked.current = false;
+        setBusy(null);
+      }
+    }
+  };
   const logout = async () => {
     if (!supabase || locked.current) return;
     locked.current = true;
@@ -396,6 +526,9 @@ export function useCloudGroups(options: {
     save,
     open,
     sendLink,
+    signInGoogle,
+    googleStatus,
+    checkGoogle,
     logout,
     detach,
     invite,

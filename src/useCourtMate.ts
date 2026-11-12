@@ -528,6 +528,7 @@ export function useCourtMate() {
     snapshot,
     onLoad: restoreSnapshot,
     onAccountClosed: reset,
+    onAuthReturn: () => setModal("account"),
     notify,
   });
   const nameFor = (pid: number) =>

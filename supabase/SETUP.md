@@ -12,13 +12,37 @@ For read-only LINE invitations, apply [the invite migration](migrations/20261112
 
 ## 2. Authentication
 
-Use Supabase email Magic Links with the default confirmation-link email template. In **Authentication → URL Configuration**, set the Site URL to the production Netlify origin and add the exact production URL to Redirect URLs. For this deployment:
+Google sign-in is the primary method. Email Magic Links remain an optional fallback for authorized addresses. In **Authentication → URL Configuration**, set the Site URL to the production Netlify origin and add the exact production URL to Redirect URLs. For this deployment:
 
 ```text
 https://sensational-quokka-95aa17.netlify.app/
 ```
 
-Add `http://127.0.0.1:5173/` only while testing locally. Do not use an unrestricted production redirect wildcard. Each browser requests its own sign-in link and opens it in that browser (PKCE). Auth sessions persist on the device until local sign-out. The application never stores a password.
+Add `http://127.0.0.1:5173/` only while testing locally. Do not use an unrestricted production redirect wildcard. Both methods use PKCE. Auth sessions persist on the device until local sign-out. The application never stores a password.
+
+### Google provider
+
+1. Open [Google Auth Platform](https://console.cloud.google.com/auth/overview) in a Google Cloud project dedicated to CourtMate. Set app name **CourtMate**, a support email and developer contact email you control. Choose **External** audience for other organizers.
+2. Request only `openid`, `userinfo.email`, and `userinfo.profile`. Do not request Gmail, Drive, offline access or extra Google API permissions.
+3. Create an OAuth client, type **Web application**, name **CourtMate Web**. Use this exact authorized JavaScript origin (no trailing slash):
+
+   ```text
+   https://sensational-quokka-95aa17.netlify.app
+   ```
+
+   Use this exact authorized redirect URI:
+
+   ```text
+   https://cqzubclkvscfmuvqlobz.supabase.co/auth/v1/callback
+   ```
+
+4. In Supabase → **Authentication → Sign In / Providers → Google**, enter the OAuth client ID and secret and enable Google. Keep nonce validation enabled. The secret belongs only in Supabase; never put it in Vite/Netlify build variables, this repository or chat messages.
+5. For initial testing add only the intended test accounts in Google Audience. Before inviting the public, change publishing status appropriately and complete any requirements Google shows. A test audience does not permit every organizer to sign in.
+6. The frontend checks the public Supabase Auth settings. It keeps the Google button disabled with an explanation until the provider is enabled, and has a retry button for configuration/network changes. No build variable is needed for the Google client ID or secret.
+
+The app uses `signInWithOAuth` in the same tab, returning to its exact root URL. A deliberate Google sign-in keeps only a validated working snapshot in `sessionStorage` in that tab, with a 30-minute restoration window; the app consumes and removes it on return (also on denial), and closing the tab clears it. It never stores Google credentials or tokens in the draft or puts player data in a redirect URL. The restored group remains **unsaved** until the organizer presses Save. Browser Back from Google releases the pending button lock. OAuth errors are translated to safe persistent messages, and callback parameters are removed after initialization. Open the app in Chrome/Safari rather than the LINE in-app browser for Google sign-in.
+
+[Supabase Google setup](https://supabase.com/docs/guides/auth/social-sign-in/auth-google).
 
 **Email delivery:** Supabase's built-in email service is intended for testing and restricts recipients to project-team addresses. Configure a production SMTP provider before allowing other organizers to sign in. Keep confirmation enabled; do not disable protections as a workaround. Provider credentials belong only in Supabase, never in this repository or Vite variables. [Supabase SMTP docs](https://supabase.com/docs/guides/auth/auth-smtp).
 
@@ -36,7 +60,7 @@ The publishable key identifies the application and is intentionally sent to brow
 
 ## 4. Use and verify
 
-1. Tap the cloud/account button in the header, enter your own email and open the sign-in link in that browser.
+1. Tap the cloud/account button in the header and **เข้าสู่ระบบด้วย Google**. Choose your own account and confirm the successful return. Also test declining sign-in, Browser Back, and a guest group with pending courts/costs: it must return intact and still require an explicit cloud save. Email fallback requires opening its link in the browser that requested it.
 2. Create a group, add players and choose **บันทึกก๊วนนี้** in the account panel. Confirm the success message.
 3. Play a game, edit a player's icon, add costs and choose **บันทึกการแก้ไข**.
 4. Reload, sign in on another device and open the saved group. Check players/icons, game counts, pending courts and costs.
@@ -45,6 +69,6 @@ The publishable key identifies the application and is intentionally sent to brow
 7. Sign-out clears the working draft on that device, retaining saved cloud groups. Unsaved edits require confirmation when opening another group or signing out; closing/reloading the page uses the browser's unsaved-data prompt.
 8. Tap **ชวนเพื่อน**, create a link, then choose **ชวนผ่าน LINE** or copy the invitation. Sending is a user action in LINE; the app never selects a recipient or sends a message. LINE's share URL scheme supports mobile iOS/Android; desktop users can copy and paste. Verify an invalid/rotated/revoked/expired token cannot open the roster and the invite page has no editing controls.
 
-`npm test` runs the domain/snapshot suites and the actual migration against isolated in-memory Postgres (PGlite). Security checks cover two owners, anonymous reads, impersonation, owner/revision tampering, deletes, invalid payloads, duplicate insert IDs and stale revision writes. PGlite is a development dependency and is not shipped to browsers. Live email delivery and final sign-in must still be verified against the real project.
+`npm test` runs the domain/snapshot/auth-redirect suites and the actual migration against isolated in-memory Postgres (PGlite). Security checks cover two owners, anonymous reads, impersonation, owner/revision tampering, deletes, invalid payloads, duplicate insert IDs and stale revision writes. Auth-draft tests cover one-time restoration, tab isolation, expiry, corrupt snapshots and blocked storage. PGlite is a development dependency and is not shipped to browsers. Final Google sign-in and live email delivery must still be verified against the real project.
 
 Laravel remains an optional legacy calculation API; cloud persistence uses Supabase directly and requires neither a PHP server nor an elevated Supabase key.

@@ -25,6 +25,7 @@ Compact mobile activity tool for friends organizing badminton. Follow the user's
 - Large welcoming artwork is reserved for the empty state. Use short scene strips during play, hide them on short phones, and retain internally scrolling player/history/billing lists.
 - Normal text contrast target 4.5:1. Do not convey skill or selected state only through color.
 - Cloud account and read-only invitations use the same native dialog and blue/mint visual language. Save explicitly; show success, pending edits, load failures and conflict feedback. Explain invitation visibility before creating a link. LINE sharing is initiated and sent by the user, with a copy fallback on desktop.
+- Google sign-in uses the official color mark on a white outlined 48px button, with a persistent readiness/error explanation. Email fallback is collapsed. Explain tab-scoped temporary draft restoration before redirecting; restored drafts still require explicit cloud Save. Keep the layout usable at 320px without horizontal scrolling.
 - Honor reduced motion and keep fonts bundled. Supabase is the sole cloud runtime dependency.
 
 ## Verified skill searches

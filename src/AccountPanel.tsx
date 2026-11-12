@@ -11,6 +11,7 @@ import {
   Smartphone,
 } from "lucide-react";
 import type { useCloudGroups } from "./useCloudGroups";
+import googleMark from "./assets/google-g.png";
 
 type Props = {
   cloud: ReturnType<typeof useCloudGroups>;
@@ -57,63 +58,120 @@ export function AccountPanel({ cloud, groupName, onInstall, onInvite }: Props) {
           กำลังตรวจการเข้าสู่ระบบ…
         </p>
       ) : !cloud.user ? (
-        <form onSubmit={submit}>
-          <label className="caption" htmlFor="account-email">
-            อีเมลผู้จัดก๊วน
-          </label>
-          <input
-            id="account-email"
-            className="field"
-            type="email"
-            autoComplete="email"
-            inputMode="email"
-            required
-            maxLength={254}
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={Boolean(cloud.busy)}
-          />
+        <section aria-label="เข้าสู่ระบบผู้จัดก๊วน">
           <button
-            className="btn btn-primary mt-4 w-full"
-            disabled={Boolean(cloud.busy) || seconds > 0}
+            type="button"
+            className="google-signin"
+            disabled={Boolean(cloud.busy) || cloud.googleStatus !== "enabled"}
+            onClick={() => void cloud.signInGoogle()}
+            aria-describedby="google-signin-help"
           >
-            {cloud.busy === "email" ? (
+            {cloud.busy === "google" || cloud.googleStatus === "checking" ? (
               <LoaderCircle
                 className="animate-spin"
-                size={18}
+                size={20}
                 aria-hidden="true"
               />
             ) : (
-              <Mail size={18} aria-hidden="true" />
+              <img src={googleMark} alt="" width={20} height={20} />
             )}
-            {cloud.busy === "email"
-              ? "กำลังส่งลิงก์…"
-              : seconds > 0
-                ? `ส่งใหม่ได้ใน ${seconds} วินาที`
-                : cloud.emailSent
-                  ? "ส่งลิงก์อีกครั้ง"
-                  : "รับลิงก์เข้าสู่ระบบ"}
+            {cloud.busy === "google"
+              ? "กำลังไปที่ Google…"
+              : "เข้าสู่ระบบด้วย Google"}
           </button>
+          <p id="google-signin-help" className="account-help" role="status">
+            {cloud.googleStatus === "checking"
+              ? "กำลังตรวจความพร้อม…"
+              : cloud.googleStatus === "disabled"
+                ? "Google ยังอยู่ระหว่างตั้งค่า ลองใหม่เมื่อผู้ดูแลเชื่อมต่อเสร็จแล้ว"
+                : cloud.googleStatus === "error"
+                  ? "ตรวจความพร้อมไม่ได้ กรุณาตรวจอินเทอร์เน็ตแล้วลองใหม่"
+                  : "เลือกบัญชี Google แล้วกลับมาจัดก๊วนต่อได้เลย ไม่ต้องรออีเมล"}
+          </p>
+          {["disabled", "error"].includes(cloud.googleStatus) && (
+            <button
+              type="button"
+              className="btn btn-secondary mt-3 w-full"
+              disabled={Boolean(cloud.busy)}
+              onClick={() => void cloud.checkGoogle()}
+            >
+              <RefreshCw size={16} aria-hidden="true" /> ตรวจความพร้อมอีกครั้ง
+            </button>
+          )}
+          {groupName && (
+            <p className="account-help">
+              เมื่อกดเข้าสู่ระบบ
+              จะเก็บก๊วนนี้ชั่วคราวในแท็บเดิมเพื่อกลับมาต่อภายใน 30 นาที
+              กลับมาแล้วกดบันทึกเพื่อเก็บออนไลน์
+            </p>
+          )}
           {cloud.authError && (
             <div className="account-error" role="alert">
               {cloud.authError}
             </div>
           )}
-          {cloud.emailSent && !cloud.authError && (
-            <div className="account-success" role="status">
-              ส่งลิงก์แล้ว ตรวจอีเมลและสแปม
-              แล้วเปิดลิงก์ในเบราว์เซอร์ที่ใช้ขอเข้าสู่ระบบนี้
-              <p className="mt-2">
-                หากใช้ Gmail ลองค้นหา <code>in:anywhere supabase</code>
+          <details className="email-alternative">
+            <summary>เข้าสู่ระบบทางอีเมล</summary>
+            <p className="account-help">
+              สำหรับอีเมลที่ผู้ดูแลเปิดให้ใช้งานแล้ว
+            </p>
+            <form onSubmit={submit}>
+              <label className="caption" htmlFor="account-email">
+                อีเมลผู้จัดก๊วน
+              </label>
+              <input
+                id="account-email"
+                className="field"
+                type="email"
+                autoComplete="email"
+                inputMode="email"
+                required
+                maxLength={254}
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={Boolean(cloud.busy)}
+              />
+              <button
+                className="btn btn-primary mt-4 w-full"
+                disabled={Boolean(cloud.busy) || seconds > 0}
+              >
+                {cloud.busy === "email" ? (
+                  <LoaderCircle
+                    className="animate-spin"
+                    size={18}
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <Mail size={18} aria-hidden="true" />
+                )}
+                {cloud.busy === "email"
+                  ? "กำลังส่งลิงก์…"
+                  : seconds > 0
+                    ? `ส่งใหม่ได้ใน ${seconds} วินาที`
+                    : cloud.emailSent
+                      ? "ส่งลิงก์อีกครั้ง"
+                      : "รับลิงก์เข้าสู่ระบบ"}
+              </button>
+              {cloud.emailSent && !cloud.authError && (
+                <div className="account-success" role="status">
+                  ส่งลิงก์แล้ว ตรวจอีเมลและสแปม
+                  แล้วเปิดลิงก์ในเบราว์เซอร์ที่ใช้ขอเข้าสู่ระบบนี้
+                  <p className="mt-2">
+                    หากใช้ Gmail ลองค้นหา <code>in:anywhere supabase</code>
+                  </p>
+                </div>
+              )}
+              <p className="account-help">
+                ไม่ต้องตั้งรหัสผ่าน · เมื่อเข้าสู่ระบบ
+                อุปกรณ์นี้จะจำบัญชีไว้จนกดออกจากระบบ
               </p>
-            </div>
-          )}
+            </form>
+          </details>
           <p className="account-help">
-            ไม่ต้องตั้งรหัสผ่าน · เมื่อเข้าสู่ระบบ
-            อุปกรณ์นี้จะจำบัญชีไว้จนกดออกจากระบบ
+            หากเปิดจากแชต LINE ให้เลือกเปิดใน Chrome หรือ Safari ก่อนเข้าสู่ระบบ
           </p>
-        </form>
+        </section>
       ) : (
         <>
           <div className="account-user">
