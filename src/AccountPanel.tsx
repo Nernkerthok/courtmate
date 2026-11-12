@@ -95,10 +95,18 @@ export function AccountPanel({ cloud, groupName, onInstall, onInvite }: Props) {
                   ? "ส่งลิงก์อีกครั้ง"
                   : "รับลิงก์เข้าสู่ระบบ"}
           </button>
-          {cloud.emailSent && (
+          {cloud.authError && (
+            <div className="account-error" role="alert">
+              {cloud.authError}
+            </div>
+          )}
+          {cloud.emailSent && !cloud.authError && (
             <div className="account-success" role="status">
               ส่งลิงก์แล้ว ตรวจอีเมลและสแปม
               แล้วเปิดลิงก์ในเบราว์เซอร์ที่ใช้ขอเข้าสู่ระบบนี้
+              <p className="mt-2">
+                หากใช้ Gmail ลองค้นหา <code>in:anywhere supabase</code>
+              </p>
             </div>
           )}
           <p className="account-help">

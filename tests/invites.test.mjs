@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { authErrorMessage } from "../.test-build/authErrors.js";
 import {
   buildInviteUrl,
   parseInviteHash,
@@ -10,6 +11,23 @@ const key = {
   groupId: "11111111-1111-4111-8111-111111111111",
   token: "a".repeat(64),
 };
+test("auth failures explain rate limits and browser mismatch without exposing server details", () => {
+  assert.match(authErrorMessage({ code: "over_email_send_rate_limit" }), /รอ/);
+  assert.match(
+    authErrorMessage({ code: "bad_code_verifier" }),
+    /เบราว์เซอร์เดียว/,
+  );
+  assert.match(
+    authErrorMessage({ code: "email_address_not_authorized" }),
+    /ผู้ดูแล/,
+  );
+  const message = authErrorMessage({
+    code: "unexpected_failure",
+    message: "private SMTP credential and stack trace",
+  });
+  assert.ok(!message.includes("private"));
+  assert.ok(!message.includes("stack"));
+});
 test("invite token stays in the URL fragment and auth query parameters never reach LINE", () => {
   const url = buildInviteUrl(
     "https://courtmate.example/?code=PRIVATE_AUTH_CODE",

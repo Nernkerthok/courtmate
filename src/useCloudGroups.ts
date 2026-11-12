@@ -7,6 +7,7 @@ import {
   type CourtSnapshot,
 } from "./snapshot";
 import { buildInviteUrl } from "./invites";
+import { authErrorMessage } from "./authErrors";
 
 export type SavedGroup = {
   id: string;
@@ -43,6 +44,7 @@ export function useCloudGroups(options: {
   const [attached, setAttached] = useState<SavedGroup | null>(null);
   const [baseline, setBaseline] = useState("");
   const [emailSent, setEmailSent] = useState(false);
+  const [authError, setAuthError] = useState("");
   const [resendAt, setResendAt] = useState(0);
   const [invite, setInvite] = useState<{
     url: string;
@@ -93,6 +95,7 @@ export function useCloudGroups(options: {
         if (error) {
           if (live) {
             setAuthLoading(false);
+            setAuthError(authErrorMessage(error));
             notify("ตรวจการเข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่");
           }
         } else applyUser(data.session?.user ?? null);
@@ -278,6 +281,7 @@ export function useCloudGroups(options: {
     if (!supabase || locked.current || Date.now() < resendAt) return;
     locked.current = true;
     setBusy("email");
+    setAuthError("");
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
@@ -287,8 +291,10 @@ export function useCloudGroups(options: {
       setEmailSent(true);
       setResendAt(Date.now() + 60000);
       notify("ส่งลิงก์เข้าสู่ระบบแล้ว ตรวจอีเมลและโฟลเดอร์สแปม");
-    } catch {
-      notify("ส่งลิงก์ไม่ได้ กรุณาตรวจอีเมลและลองใหม่ หรือติดต่อผู้ดูแล");
+    } catch (error) {
+      const message = authErrorMessage(error);
+      setAuthError(message);
+      notify(message);
     } finally {
       locked.current = false;
       setBusy(null);
@@ -384,6 +390,7 @@ export function useCloudGroups(options: {
     attached,
     dirty,
     emailSent,
+    authError,
     resendAt,
     refresh,
     save,
