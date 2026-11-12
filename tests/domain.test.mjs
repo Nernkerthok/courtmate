@@ -9,6 +9,8 @@ import {
   cancelPendingMatch,
   replacePendingMatch,
   gameRate,
+  avatarNames,
+  playerAvatar,
 } from "../.test-build/domain.js";
 const fixtures = JSON.parse(
   fs.readFileSync(new URL("./billing-cases.json", import.meta.url), "utf8"),
@@ -119,6 +121,36 @@ test("editing a name and level preserves identity and completed games", () => {
   assert.throws(() => updatePlayer(ps, 1, "คน2", 3));
   assert.throws(() => updatePlayer(ps, 1, "   ", 3));
   assert.throws(() => updatePlayer(ps, 1, "ใหม่", 6));
+});
+test("avatar changes preserve player identity, games and bill shares through a completed match", () => {
+  const ps = players([3, 2, 0, 0]);
+  const next = updatePlayer(ps, 1, ps[0].name, ps[0].level, 8);
+  assert.equal(playerAvatar(next[0]), 8);
+  assert.equal(playerAvatar(ps[1]), 1);
+  assert.equal(next[0].id, ps[0].id);
+  assert.equal(next[0].games, ps[0].games);
+  assert.equal(next[1], ps[1]);
+  assert.equal(ps[0].avatar, undefined);
+  const costs = {
+    minutes: 60,
+    courts: 1,
+    courtRateCents: 18000,
+    shuttleCostCents: 9000,
+    extras: [],
+  };
+  assert.deepEqual(calculateBill(next, costs), calculateBill(ps, costs));
+  const played = completeMatch(next, {
+    id: 1,
+    a: [1, 2],
+    b: [3, 4],
+    done: false,
+  });
+  assert.equal(played[0].avatar, 8);
+  assert.equal(played[0].games, 4);
+  assert.equal(updatePlayer(played, 1, "เปลี่ยนชื่อ", 4)[0].avatar, 8);
+  for (const invalid of [-1, 0.5, avatarNames.length, NaN]) {
+    assert.throws(() => updatePlayer(ps, 1, ps[0].name, 3, invalid));
+  }
 });
 test("cancelling an unfinished court keeps completed courts and counters intact", () => {
   const ps = players([0, 0, 0, 0, 0, 0, 0, 0]);

@@ -4,7 +4,24 @@ export type Player = {
   level: number;
   games: number;
   available: boolean;
+  avatar?: number;
 };
+export const avatarNames = [
+  "นักกีฬา 1",
+  "นักกีฬา 2",
+  "นักกีฬา 3",
+  "นักกีฬา 4",
+  "นักกีฬา 5",
+  "นักกีฬา 6",
+  "นักกีฬา 7",
+  "นักกีฬา 8",
+  "แมว",
+  "สุนัข",
+  "กระต่าย",
+  "นก",
+] as const;
+export const playerAvatar = (player: Pick<Player, "id" | "avatar">) =>
+  player.avatar ?? (player.id - 1) % 8;
 export type Match = {
   id: number;
   a: [number, number];
@@ -81,6 +98,7 @@ export function updatePlayer(
   id: number,
   name: string,
   level: number,
+  avatar?: number,
 ): Player[] {
   const value = name.trim();
   if (!players.some((p) => p.id === id)) throw new Error("ไม่พบผู้เล่นนี้");
@@ -93,13 +111,27 @@ export function updatePlayer(
   )
     throw new Error("ตรวจชื่อและ Level อีกครั้ง");
   if (
+    avatar !== undefined &&
+    (!Number.isInteger(avatar) || avatar < 0 || avatar >= avatarNames.length)
+  )
+    throw new Error("เลือกไอคอนผู้เล่นอีกครั้ง");
+  if (
     players.some(
       (p) =>
         p.id !== id && p.name.toLocaleLowerCase() === value.toLocaleLowerCase(),
     )
   )
     throw new Error("มีชื่อนี้แล้ว ลองเติมชื่อเล่นหรือหมายเลข");
-  return players.map((p) => (p.id === id ? { ...p, name: value, level } : p));
+  return players.map((p) =>
+    p.id === id
+      ? {
+          ...p,
+          name: value,
+          level,
+          ...(avatar === undefined ? {} : { avatar }),
+        }
+      : p,
+  );
 }
 export function cancelPendingMatch(matches: Match[], id: number): Match[] {
   const match = matches.find((m) => m.id === id);

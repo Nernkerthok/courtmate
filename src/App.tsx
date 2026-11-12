@@ -19,9 +19,21 @@ import {
   Wallet,
   Smartphone,
   X,
+  Cat,
+  Dog,
+  Rabbit,
+  Bird,
 } from "lucide-react";
 import { type ReactNode } from "react";
-import { baht, gameRate, levelNames, MAX_PLAYERS, type Player } from "./domain";
+import {
+  baht,
+  gameRate,
+  levelNames,
+  MAX_PLAYERS,
+  avatarNames,
+  playerAvatar,
+  type Player,
+} from "./domain";
 import { useCourtMate } from "./useCourtMate";
 import { useInstall } from "./useInstall";
 
@@ -55,42 +67,53 @@ function Shuttle({ className = "" }: { className?: string }) {
     </svg>
   );
 }
-function Avatar({ p }: { p: Pick<Player, "id" | "name"> }) {
+function Avatar({ p }: { p: Pick<Player, "id" | "avatar"> }) {
+  const choice = playerAvatar(p);
+  const portrait = choice + 1;
+  const Animal = [Cat, Dog, Rabbit, Bird][choice - 8];
   const shirts = ["#078bff", "#4ab694", "#9670ee", "#ed9b4d", "#e778a1"];
-  const skin = p.id % 3 === 0 ? "#d59669" : "#ffc79b";
+  const skin = portrait % 3 === 0 ? "#d59669" : "#ffc79b";
   return (
     <span
       aria-hidden="true"
-      className={`player-avatar flex size-9 shrink-0 items-center justify-center rounded-full text-sm ${colors[(p.id - 1) % colors.length]}`}
+      className={`player-avatar flex size-9 shrink-0 items-center justify-center rounded-full text-sm ${colors[choice % colors.length]}`}
+      data-avatar={choice}
     >
-      <svg viewBox="0 0 48 48" fill="none">
-        <path
-          d="M7 48c0-12 7-17 17-17s17 5 17 17"
-          fill={shirts[(p.id - 1) % shirts.length]}
-        />
-        <path d="m19 30 5 8 5-8" fill="white" />
-        <rect x="20" y="26" width="8" height="10" rx="3" fill={skin} />
-        {p.id % 2 === 0 && (
-          <path d="M12 20C10 3 38 3 36 20l2 18-10-4-10 2-8-1Z" fill="#27314a" />
-        )}
-        <ellipse cx="24" cy="20" rx="11" ry="14" fill={skin} />
-        <path
-          d="M13 19C8 6 23 2 28 6c10-1 10 9 7 13l-4-8c-4 5-10 3-14 2l-3 8Z"
-          fill="#27314a"
-        />
-        <path
-          d="M19 20h.1m9.8 0h.1"
-          stroke="#27314a"
-          strokeWidth="2.3"
-          strokeLinecap="round"
-        />
-        <path
-          d="M21 26q3 3 6 0"
-          stroke="#a95c47"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-      </svg>
+      {Animal ? (
+        <Animal className="animal-avatar" strokeWidth={1.8} />
+      ) : (
+        <svg viewBox="0 0 48 48" fill="none">
+          <path
+            d="M7 48c0-12 7-17 17-17s17 5 17 17"
+            fill={shirts[choice % shirts.length]}
+          />
+          <path d="m19 30 5 8 5-8" fill="white" />
+          <rect x="20" y="26" width="8" height="10" rx="3" fill={skin} />
+          {portrait % 2 === 0 && (
+            <path
+              d="M12 20C10 3 38 3 36 20l2 18-10-4-10 2-8-1Z"
+              fill="#27314a"
+            />
+          )}
+          <ellipse cx="24" cy="20" rx="11" ry="14" fill={skin} />
+          <path
+            d="M13 19C8 6 23 2 28 6c10-1 10 9 7 13l-4-8c-4 5-10 3-14 2l-3 8Z"
+            fill="#27314a"
+          />
+          <path
+            d="M19 20h.1m9.8 0h.1"
+            stroke="#27314a"
+            strokeWidth="2.3"
+            strokeLinecap="round"
+          />
+          <path
+            d="M21 26q3 3 6 0"
+            stroke="#a95c47"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      )}
     </span>
   );
 }
@@ -352,7 +375,7 @@ export default function App() {
             </span>
           </button>
           <div className="flex items-center gap-2">
-            <span className="version-badge hidden sm:inline">v0.8.1</span>
+            <span className="version-badge hidden sm:inline">v0.9</span>
             {!installation.installed && (
               <button
                 className="install-header-button"
@@ -916,7 +939,18 @@ export default function App() {
                       <tbody>
                         {c.summary.bill.rows.map((p) => (
                           <tr key={p.id}>
-                            <td>{p.name}</td>
+                            <td>
+                              <span className="bill-player">
+                                <Avatar
+                                  p={
+                                    c.players.find(
+                                      (player) => player.id === p.id,
+                                    ) ?? p
+                                  }
+                                />
+                                <span>{p.name}</span>
+                              </span>
+                            </td>
                             <td>{p.games}</td>
                             <td>{baht(p.cents)}</td>
                           </tr>
@@ -1135,7 +1169,7 @@ export default function App() {
                 onClick={() => c.openEditPlayer(c.selectedPlayer!.id)}
               >
                 <Pencil size={17} />
-                แก้ไขชื่อ / Level
+                แก้ไขชื่อ / Level / ไอคอน
               </button>
               <button
                 className="btn player-delete-button w-full"
@@ -1150,7 +1184,7 @@ export default function App() {
               </button>
               {c.selectedPlayer.games > 0 ? (
                 <p className="player-action-note">
-                  ผู้เล่นมีเกมที่เล่นจบแล้ว แก้ชื่อและ Level ได้
+                  ผู้เล่นมีเกมที่เล่นจบแล้ว แก้ชื่อ Level และไอคอนได้
                   แต่เก็บรายชื่อไว้เพื่อให้ยอดหารครบ
                 </p>
               ) : (
@@ -1199,12 +1233,42 @@ export default function App() {
                   </select>
                 </Label>
               </div>
+              <fieldset className="avatar-picker">
+                <legend>ไอคอนของผู้เล่น</legend>
+                <div className="avatar-options">
+                  {avatarNames.map((label, index) => (
+                    <label className="avatar-option" key={label} title={label}>
+                      <input
+                        type="radio"
+                        name="player-avatar"
+                        aria-label={label}
+                        value={index}
+                        checked={c.avatar === index}
+                        onChange={() => c.setAvatar(index)}
+                      />
+                      <span className="avatar-option-card">
+                        <Avatar p={{ id: 1, avatar: index }} />
+                        {c.avatar === index && (
+                          <Check
+                            className="avatar-check"
+                            size={13}
+                            aria-hidden="true"
+                          />
+                        )}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <p className="avatar-selection">
+                  เลือกอยู่: {avatarNames[c.avatar]}
+                </p>
+              </fieldset>
               <p className="mt-3 text-xs leading-6 text-muted">
                 {c.editingPlayerId !== null
-                  ? "แก้ชื่อและ Level ได้ โดยจำนวนเกมเดิมไม่เปลี่ยน"
+                  ? "แก้ชื่อ Level และไอคอนได้ โดยจำนวนเกมเดิมไม่เปลี่ยน"
                   : `มี ${c.players.length} คนในก๊วน · เพิ่มต่อได้ทันทีหลังสำเร็จ`}
               </p>
-              <div className="mt-5 grid grid-cols-[1fr_1.7fr] gap-3">
+              <div className="player-form-actions mt-5 grid grid-cols-[1fr_1.7fr] gap-3">
                 <button
                   type="button"
                   className="btn btn-secondary"

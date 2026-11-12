@@ -18,6 +18,7 @@ Compact mobile activity tool for friends organizing badminton. Follow the user's
 
 - One viewport with header, title, flexible internally scrolling content, persistent primary action and three-item bottom navigation. Allow internal scrolling rather than shrinking text.
 - Roster grouped by Level 1–5; 2/3/4 columns at phone/600px/900px. Whole player tile opens an action dialog.
+- Player icon picker: 12 local SVG presets, native radio group with visible focus, selected border and checkmark, minimum 44px targets. Four columns on narrow phones, six from 360px. Keep choices in session memory and reuse each player's selected icon across roster, court and on-screen billing table.
 - Prefer 44px touch controls; 48px primary actions. Selected, disabled, hover and pressed states must be visible without changing layout.
 - Native dialog for focus containment and Escape; labeled fields and controls. Keep success feedback visible above the dialog layer.
 - Team A uses blue and Team B mint, with explicit team legends. Show the selected name first, then Level and games below; retain native select controls for mobile and keyboard support.

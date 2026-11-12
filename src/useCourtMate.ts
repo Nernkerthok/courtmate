@@ -7,6 +7,8 @@ import {
   cancelPendingMatch,
   replacePendingMatch,
   MAX_PLAYERS,
+  avatarNames,
+  playerAvatar,
   type Bill,
   type CostInput,
   type Match,
@@ -30,6 +32,7 @@ export function useCourtMate() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [name, setName] = useState("");
   const [level, setLevel] = useState(3);
+  const [avatar, setAvatar] = useState(0);
   const [editingPlayerId, setEditingPlayerId] = useState<number | null>(null);
   const [editingMatchId, setEditingMatchId] = useState<number | null>(null);
   const [matchDraft, setMatchDraft] = useState<number[]>([0, 0, 0, 0]);
@@ -107,12 +110,22 @@ export function useCourtMate() {
     e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) return;
+    if (
+      !Number.isInteger(avatar) ||
+      avatar < 0 ||
+      avatar >= avatarNames.length
+    ) {
+      notify("เลือกไอคอนผู้เล่นอีกครั้ง");
+      return;
+    }
     if (editingPlayerId !== null) {
       try {
-        setPlayers(updatePlayer(players, editingPlayerId, trimmed, level));
+        setPlayers(
+          updatePlayer(players, editingPlayerId, trimmed, level, avatar),
+        );
         setModal(null);
         setEditingPlayerId(null);
-        notify("แก้ไขชื่อและ Level ผู้เล่นสำเร็จ");
+        notify("แก้ไขข้อมูลและไอคอนผู้เล่นสำเร็จ");
       } catch (error) {
         notify((error as Error).message);
       }
@@ -136,15 +149,18 @@ export function useCourtMate() {
       level,
       games: 0,
       available: true,
+      avatar,
     };
     setPlayers((p) => [...p, nextPlayer]);
     setName("");
+    setAvatar((id.current - 1) % 8);
     notify(`เพิ่ม ${trimmed} เข้าก๊วนสำเร็จ`);
   };
   const openNewPlayer = () => {
     setEditingPlayerId(null);
     setName("");
     setLevel(3);
+    setAvatar((id.current - 1) % 8);
     setModal("player");
   };
   const openEditPlayer = (pid: number) => {
@@ -153,6 +169,7 @@ export function useCourtMate() {
     setEditingPlayerId(pid);
     setName(player.name);
     setLevel(player.level);
+    setAvatar(playerAvatar(player));
     setModal("player");
   };
   const selectedPlayer = players.find((p) => p.id === editingPlayerId);
@@ -429,6 +446,7 @@ export function useCourtMate() {
     setPlayView("courts");
     setGroupName("");
     setName("");
+    setAvatar(0);
     setMatches([]);
     setHistory([]);
     setRound(0);
@@ -514,6 +532,8 @@ export function useCourtMate() {
     setName,
     level,
     setLevel,
+    avatar,
+    setAvatar,
     mode,
     setMode,
     courts,
