@@ -24,7 +24,8 @@ Compact mobile activity tool for friends organizing badminton. Follow the user's
 - Team A uses blue and Team B mint, with explicit team legends. Show the selected name first, then Level and games below; retain native select controls for mobile and keyboard support.
 - Large welcoming artwork is reserved for the empty state. Use short scene strips during play, hide them on short phones, and retain internally scrolling player/history/billing lists.
 - Normal text contrast target 4.5:1. Do not convey skill or selected state only through color.
-- Honor reduced motion; no new runtime dependencies or remote fonts.
+- Cloud account and read-only invitations use the same native dialog and blue/mint visual language. Save explicitly; show success, pending edits, load failures and conflict feedback. Explain invitation visibility before creating a link. LINE sharing is initiated and sent by the user, with a copy fallback on desktop.
+- Honor reduced motion and keep fonts bundled. Supabase is the sole cloud runtime dependency.
 
 ## Verified skill searches
 

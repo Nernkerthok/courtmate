@@ -15,8 +15,9 @@ import {
   type Player,
 } from "./domain";
 import { createBillImage } from "./export";
+import { parseSnapshot, type CourtSnapshot, type Played } from "./snapshot";
+import { useCloudGroups } from "./useCloudGroups";
 type Step = "group" | "play" | "cost";
-type Played = { id: number; round: number; match: Match };
 type Summary = { bill: Bill; costs: CostInput; name: string };
 const sampleNames = ["ต้น", "มิน", "เจมส์", "พลอย", "บาส", "ฟ้า", "นัท", "แพร"];
 export function useCourtMate() {
@@ -73,6 +74,8 @@ export function useCourtMate() {
     | "editMatch"
     | "billDetails"
     | "install"
+    | "account"
+    | "invite"
     | null
   >(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -437,6 +440,7 @@ export function useCourtMate() {
     }
   };
   const reset = () => {
+    cloud.detach();
     setPlayers([]);
     setGroupCreated(false);
     setGroupDraft("");
@@ -461,6 +465,71 @@ export function useCourtMate() {
     imageBlob.current = null;
     notify("พร้อมเริ่มก๊วนใหม่");
   };
+  const restoreSnapshot = (value: CourtSnapshot) => {
+    const saved = parseSnapshot(value);
+    setGroupCreated(true);
+    setGroupName(saved.groupName);
+    setGroupDraft(saved.groupName);
+    setPlayers(saved.players);
+    setMatches(saved.matches);
+    setHistory(saved.history);
+    setRound(saved.round);
+    setMode(saved.mode);
+    setCourts(saved.courts);
+    setCostFields(saved.costFields);
+    setExtras(saved.extras);
+    setStep(saved.step);
+    setSlots(Array(saved.courts * 4).fill(0));
+    setMatchDraft([0, 0, 0, 0]);
+    setEditingPlayerId(null);
+    setEditingMatchId(null);
+    setName("");
+    setAvatar(0);
+    setSummary(null);
+    setImageUrl("");
+    imageBlob.current = null;
+    setPlayView("courts");
+    setModal(null);
+    id.current = Math.max(0, ...saved.players.map((p) => p.id)) + 1;
+    gameId.current = Math.max(0, ...saved.history.map((h) => h.id)) + 1;
+  };
+  const snapshot = useMemo<CourtSnapshot | null>(
+    () =>
+      groupCreated
+        ? {
+            version: 1,
+            groupName,
+            players,
+            matches,
+            history,
+            round,
+            mode,
+            courts,
+            costFields,
+            extras,
+            step,
+          }
+        : null,
+    [
+      groupCreated,
+      groupName,
+      players,
+      matches,
+      history,
+      round,
+      mode,
+      courts,
+      costFields,
+      extras,
+      step,
+    ],
+  );
+  const cloud = useCloudGroups({
+    snapshot,
+    onLoad: restoreSnapshot,
+    onAccountClosed: reset,
+    notify,
+  });
   const nameFor = (pid: number) =>
     players.find((p) => p.id === pid)?.name || "—";
 
@@ -509,6 +578,7 @@ export function useCourtMate() {
   };
 
   return {
+    cloud,
     step,
     groupCreated,
     groupDraft,

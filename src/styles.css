@@ -1895,3 +1895,271 @@ body {
     grid-template-columns: repeat(6, minmax(44px, 1fr));
   }
 }
+.cloud-account-button {
+  position: relative;
+  color: #1467d3;
+}
+.install-header-button {
+  min-width: 44px;
+}
+.cloud-unsaved-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d88312;
+  border: 2px solid white;
+}
+.account-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.account-intro {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #edf6ff;
+}
+.account-intro > svg {
+  flex-shrink: 0;
+  color: #1467d3;
+}
+.account-panel h3 {
+  font-size: 14px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.account-intro p,
+.account-help,
+.account-privacy {
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--color-muted);
+}
+.account-intro p {
+  margin-top: 4px;
+}
+.account-help {
+  margin-top: 10px;
+}
+.account-success,
+.account-error {
+  font-size: 12px;
+  line-height: 1.9;
+  border-radius: 14px;
+  padding: 12px;
+  margin-top: 12px;
+}
+.account-success {
+  background: #edfbf3;
+  color: #146b4c;
+}
+.account-error {
+  background: #fff1ee;
+  color: #9a342b;
+}
+.account-user {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+  color: #1467d3;
+}
+.account-user > svg {
+  flex-shrink: 0;
+}
+.account-user > span {
+  min-width: 0;
+}
+.cloud-current {
+  padding: 15px;
+  background: #f3f9ff;
+  border: 1px solid #d5e6fc;
+  border-radius: 18px;
+}
+.cloud-current h3 {
+  font-size: 16px;
+}
+.cloud-current p {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin-top: 6px;
+}
+.cloud-list-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.saved-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.saved-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  min-height: 76px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid #dce8f9;
+}
+.saved-group:hover {
+  background: #f0f7ff;
+}
+.saved-group > svg {
+  flex-shrink: 0;
+  color: #1467d3;
+}
+.saved-group > span {
+  min-width: 0;
+}
+.saved-group strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.saved-group small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.cloud-confirm {
+  border: 1px solid #e9d7ac;
+  border-radius: 18px;
+  padding: 14px;
+  background: #fffbef;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.cloud-confirm > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.cloud-confirm .btn {
+  flex: 1;
+  padding-inline: 10px;
+}
+.account-privacy {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.account-privacy > svg {
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.roster-invite-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: #eaf4ff;
+  color: #075fc0;
+  font-size: 12px;
+}
+.line-share-button {
+  color: white;
+  background: #087c39;
+}
+.line-share-button:hover {
+  background: #08682f;
+}
+.invite-link-field {
+  font-size: 16px;
+}
+.invite-view {
+  overflow: hidden;
+}
+.invite-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  height: 100%;
+  padding: 0 18px;
+}
+.invite-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.invite-content > * {
+  flex-shrink: 0;
+}
+.invite-content .scene-strip {
+  display: block;
+  height: 130px;
+}
+.invite-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+.invite-title h1 {
+  font-size: 24px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.invite-title > svg {
+  flex-shrink: 0;
+  color: #1467d3;
+}
+.invite-roster {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+.invite-person {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #dce8fa;
+  background: white;
+  padding: 12px;
+  border-radius: 17px;
+  min-width: 0;
+}
+.invite-person > div {
+  min-width: 0;
+}
+.invite-person strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.invite-person small {
+  display: block;
+  color: var(--color-muted);
+  margin-top: 4px;
+  font-size: 12px;
+}
+@media (min-width: 600px) {
+  .invite-roster {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .invite-content {
+    max-width: 850px;
+    width: 100%;
+    margin-inline: auto;
+  }
+}

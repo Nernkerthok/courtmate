@@ -1,3 +1,4 @@
+import { Avatar } from "./Avatar";
 import {
   ArrowRight,
   Check,
@@ -19,36 +20,29 @@ import {
   Wallet,
   Smartphone,
   X,
-  Cat,
-  Dog,
-  Rabbit,
-  Bird,
+  Cloud,
+  UserRound,
 } from "lucide-react";
-import { type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   baht,
   gameRate,
   levelNames,
   MAX_PLAYERS,
   avatarNames,
-  playerAvatar,
   type Player,
 } from "./domain";
 import { useCourtMate } from "./useCourtMate";
 import { useInstall } from "./useInstall";
+import { AccountPanel } from "./AccountPanel";
+import { InvitePanel } from "./InvitePanel";
+import { InviteView } from "./InviteView";
 
 const steps = [
   { id: "group", label: "จัดก๊วน", icon: Users },
   { id: "play", label: "จับคู่เล่น", icon: Shuffle },
   { id: "cost", label: "ค่าใช้จ่าย", icon: Wallet },
 ] as const;
-const colors = [
-  "bg-[#e2efcf] text-[#426522]",
-  "bg-[#e2edf5] text-[#395f82]",
-  "bg-[#f6e8cf] text-[#805e28]",
-  "bg-[#eee4f4] text-[#715187]",
-  "bg-[#f5e2e9] text-[#8b4463]",
-];
 function Shuttle({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -65,56 +59,6 @@ function Shuttle({ className = "" }: { className?: string }) {
         strokeWidth="1.7"
       />
     </svg>
-  );
-}
-function Avatar({ p }: { p: Pick<Player, "id" | "avatar"> }) {
-  const choice = playerAvatar(p);
-  const portrait = choice + 1;
-  const Animal = [Cat, Dog, Rabbit, Bird][choice - 8];
-  const shirts = ["#078bff", "#4ab694", "#9670ee", "#ed9b4d", "#e778a1"];
-  const skin = portrait % 3 === 0 ? "#d59669" : "#ffc79b";
-  return (
-    <span
-      aria-hidden="true"
-      className={`player-avatar flex size-9 shrink-0 items-center justify-center rounded-full text-sm ${colors[choice % colors.length]}`}
-      data-avatar={choice}
-    >
-      {Animal ? (
-        <Animal className="animal-avatar" strokeWidth={1.8} />
-      ) : (
-        <svg viewBox="0 0 48 48" fill="none">
-          <path
-            d="M7 48c0-12 7-17 17-17s17 5 17 17"
-            fill={shirts[choice % shirts.length]}
-          />
-          <path d="m19 30 5 8 5-8" fill="white" />
-          <rect x="20" y="26" width="8" height="10" rx="3" fill={skin} />
-          {portrait % 2 === 0 && (
-            <path
-              d="M12 20C10 3 38 3 36 20l2 18-10-4-10 2-8-1Z"
-              fill="#27314a"
-            />
-          )}
-          <ellipse cx="24" cy="20" rx="11" ry="14" fill={skin} />
-          <path
-            d="M13 19C8 6 23 2 28 6c10-1 10 9 7 13l-4-8c-4 5-10 3-14 2l-3 8Z"
-            fill="#27314a"
-          />
-          <path
-            d="M19 20h.1m9.8 0h.1"
-            stroke="#27314a"
-            strokeWidth="2.3"
-            strokeLinecap="round"
-          />
-          <path
-            d="M21 26q3 3 6 0"
-            stroke="#a95c47"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
-      )}
-    </span>
   );
 }
 function CourtArt() {
@@ -292,6 +236,19 @@ function Notice({
 }
 
 export default function App() {
+  const [hash, setHash] = useState(location.hash);
+  useEffect(() => {
+    const changed = () => setHash(location.hash);
+    window.addEventListener("hashchange", changed);
+    return () => window.removeEventListener("hashchange", changed);
+  }, []);
+  return hash.startsWith("#invite=") ? (
+    <InviteView hash={hash} />
+  ) : (
+    <CourtMateApp />
+  );
+}
+function CourtMateApp() {
   const c = useCourtMate();
   const installation = useInstall();
   const titles = {
@@ -312,6 +269,8 @@ export default function App() {
     image: "รูปสรุปพร้อมแชร์",
     reset: "เริ่มก๊วนใหม่?",
     install: "เพิ่ม CourtMate ลงเครื่อง",
+    account: "บัญชีและก๊วนของฉัน",
+    invite: "ชวนเพื่อนผ่าน LINE",
   };
   const estimate =
     Math.round(
@@ -320,7 +279,9 @@ export default function App() {
     ) +
     c.costInput.shuttleCostCents +
     c.costInput.extras.reduce((sum, e) => sum + e.cents, 0);
-  const close = () => c.setModal(null);
+  const close = () => {
+    if (!c.cloud.busy) c.setModal(null);
+  };
   const mainAction =
     c.step === "group"
       ? {
@@ -360,7 +321,7 @@ export default function App() {
   return (
     <div className="app-frame">
       <header className="app-header">
-        <div className="mx-auto flex h-full w-full max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="mx-auto flex h-full w-full max-w-5xl items-center justify-between gap-2 px-3 sm:px-6">
           <button
             onClick={() => c.go("group")}
             className="flex items-center gap-2.5 text-left font-semibold"
@@ -371,11 +332,33 @@ export default function App() {
             </span>
             <span className="brand-name">
               CourtMate
-              <small className="brand-tagline">เพื่อนครบ คู่พร้อม</small>
+              <small className="brand-tagline">
+                {c.cloud.user
+                  ? c.cloud.dirty
+                    ? "มีข้อมูลที่ยังไม่บันทึก"
+                    : c.cloud.attached
+                      ? "บันทึกก๊วนแล้ว"
+                      : "พร้อมบันทึกก๊วน"
+                  : "เพื่อนครบ คู่พร้อม"}
+              </small>
             </span>
           </button>
-          <div className="flex items-center gap-2">
-            <span className="version-badge hidden sm:inline">v0.9</span>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <span className="version-badge hidden lg:inline">v1.0</span>
+            <button
+              className="icon-btn cloud-account-button"
+              aria-label="บัญชีและบันทึกก๊วน"
+              onClick={() => c.setModal("account")}
+            >
+              {c.cloud.user ? (
+                <UserRound size={19} aria-hidden="true" />
+              ) : (
+                <Cloud size={19} aria-hidden="true" />
+              )}
+              {c.cloud.user && c.cloud.dirty && (
+                <span className="cloud-unsaved-dot" aria-hidden="true" />
+              )}
+            </button>
             {!installation.installed && (
               <button
                 className="install-header-button"
@@ -383,7 +366,7 @@ export default function App() {
                 aria-label="ติดตั้ง CourtMate"
               >
                 <Smartphone size={16} aria-hidden="true" />
-                ติดตั้ง
+                <span className="hidden sm:inline">ติดตั้ง</span>
               </button>
             )}
             <button
@@ -500,9 +483,13 @@ export default function App() {
                   <h3>
                     เพื่อนร่วมก๊วน <span>{c.players.length} คน</span>
                   </h3>
-                  <span className="text-xs text-muted">
-                    แตะการ์ดเพื่อจัดการ
-                  </span>
+                  <button
+                    className="roster-invite-button"
+                    onClick={() => c.setModal("invite")}
+                  >
+                    <Share2 size={15} aria-hidden="true" />
+                    ชวนเพื่อน
+                  </button>
                 </div>
                 <div className="panel-scroll" aria-label="รายชื่อผู้เล่น">
                   {c.players.length ? (
@@ -573,7 +560,11 @@ export default function App() {
                   )}
                 </div>
                 <div className="screen-note">
-                  ครบ 4 คนเริ่มเล่นได้ · รายชื่ออยู่เฉพาะระหว่างเปิดหน้านี้
+                  {c.cloud.user
+                    ? "ครบ 4 คนเริ่มเล่นได้ · แตะบัญชีด้านบนเพื่อบันทึกก๊วน"
+                    : c.cloud.ready
+                      ? "ครบ 4 คนเริ่มเล่นได้ · เข้าสู่ระบบเพื่อบันทึกก๊วนไว้ใช้ต่อ"
+                      : "ครบ 4 คนเริ่มเล่นได้ · รายชื่ออยู่เฉพาะระหว่างเปิดหน้านี้"}
                 </div>
               </section>
             ))}
@@ -1036,7 +1027,10 @@ export default function App() {
         ref={c.dialog}
         aria-labelledby="dialog-title"
         className={`compact-dialog ${c.modal === "image" ? "image-dialog" : ""}`}
-        onCancel={close}
+        onCancel={(e) => {
+          e.preventDefault();
+          close();
+        }}
         onClick={(e) => {
           if (e.target === c.dialog.current) close();
         }}
@@ -1046,7 +1040,12 @@ export default function App() {
             <p className="eyebrow">COURTMATE CLUBHOUSE</p>
             <h2 id="dialog-title">{c.modal ? modalTitles[c.modal] : ""}</h2>
           </div>
-          <button aria-label="ปิดหน้าต่าง" className="icon-btn" onClick={close}>
+          <button
+            aria-label="ปิดหน้าต่าง"
+            className="icon-btn"
+            onClick={close}
+            disabled={Boolean(c.cloud.busy)}
+          >
             <X size={19} />
           </button>
         </div>
@@ -1056,6 +1055,21 @@ export default function App() {
           </div>
         )}
         <div className="dialog-body">
+          {c.modal === "account" && (
+            <AccountPanel
+              cloud={c.cloud}
+              groupName={c.groupCreated ? c.groupName : null}
+              onInstall={() => c.setModal("install")}
+              onInvite={() => c.setModal("invite")}
+            />
+          )}
+          {c.modal === "invite" && (
+            <InvitePanel
+              cloud={c.cloud}
+              groupName={c.groupName || "ก๊วนของเรา"}
+              onAccount={() => c.setModal("account")}
+            />
+          )}
           {c.modal === "install" && (
             <div className="install-guide">
               <div className="install-intro">
@@ -1122,8 +1136,9 @@ export default function App() {
                 </>
               )}
               <p className="install-note">
-                ใช้เน็ตเมื่อเปิดแอป · รายชื่อและเกมอยู่เฉพาะรอบที่เปิดใช้งาน
-                การติดตั้งไม่ได้เก็บข้อมูลไว้หลังปิดหรือรีโหลด
+                ใช้เน็ตเมื่อเปิดแอป ·
+                เข้าสู่ระบบและกดบันทึกเพื่อเปิดก๊วนต่อจากเครื่องอื่น
+                การติดตั้งอย่างเดียวไม่บันทึกข้อมูลก๊วน
               </p>
             </div>
           )}
@@ -1626,8 +1641,9 @@ export default function App() {
           {c.modal === "reset" && (
             <>
               <p className="text-sm leading-7 text-muted">
-                รายชื่อ จำนวนเกม และค่าใช้จ่ายรอบนี้จะถูกล้าง
-                ดาวน์โหลดรูปสรุปก่อนเริ่มใหม่นะ
+                จะเริ่มก๊วนใหม่บนหน้านี้
+                กดบันทึกหรือดาวน์โหลดรูปสรุปก่อนเริ่มใหม่นะ
+                ก๊วนที่บันทึกออนไลน์แล้วยังเปิดกลับมาได้ในบัญชีของคุณ
               </p>
               <div className="mt-5 flex justify-end gap-3">
                 <button className="btn btn-secondary" onClick={close}>

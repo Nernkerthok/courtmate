@@ -1,27 +1,29 @@
 {
   "name": "courtmate",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "tsc src/domain.ts --outDir .test-build --target ES2020 --module ES2022 --moduleResolution Bundler --skipLibCheck && node --test tests/domain.test.mjs tests/pwa.test.mjs"
+    "test": "tsc src/domain.ts src/snapshot.ts src/invites.ts --outDir .test-build --target ES2020 --module ES2022 --moduleResolution Bundler --skipLibCheck && node --test tests/domain.test.mjs tests/pwa.test.mjs tests/snapshot.test.mjs tests/cloud-security.test.mjs tests/invites.test.mjs"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "@fontsource/ibm-plex-sans-thai": "^5.2.8",
+    "@supabase/supabase-js": "^2.119.0",
     "lucide-react": "^0.468.0",
-    "@fontsource/ibm-plex-sans-thai": "^5.2.8"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16",
+    "@tailwindcss/vite": "^4.3.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "typescript": "~5.6.3",
-    "vite": "^6.0.5",
     "@vitejs/plugin-react": "^4.3.4",
     "tailwindcss": "^4.3.0",
-    "@tailwindcss/vite": "^4.3.0"
+    "typescript": "~5.6.3",
+    "vite": "^6.0.5"
   }
 }
