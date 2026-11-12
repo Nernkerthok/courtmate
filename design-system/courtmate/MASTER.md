@@ -4,15 +4,15 @@ Applied using [UI/UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-
 
 ## Direction
 
-Compact mobile activity tool for friends organizing badminton. Use the skill's Flat Design recommendation: clear surfaces, strong hierarchy, restrained effects, fast color feedback. The generated landing-page sections and serif typography do not fit this existing Thai utility app; retain the three-step workspace and bundled IBM Plex Sans Thai. The original emerald/teal and lime brief takes precedence over generated alternative palettes.
+Compact mobile activity tool for friends organizing badminton. Follow the user's illustrated sports reference: luminous sky blue, royal blue primary actions, friendly badminton artwork, white rounded cards, navy Thai text and mint courts. Apply UI/UX Pro Max's vibrant direction with restrained shadows and clear hierarchy. Retain the three-step workspace and bundled IBM Plex Sans Thai.
 
 ## Tokens
 
-- Canvas: `#f3f7f4`; surface: white; ink: `#153e35`; secondary text: `#526b65`.
-- Brand: `#075e49`; deep brand: `#103e33`; accent: `#d4f578` with deep-brand text.
-- Borders: `#cfded7`; soft selected surface: `#d9efe5`.
+- Canvas: `#f5faff`; surface: white; ink: `#111b38`; secondary text: `#5c6c8d`.
+- Primary gradient: `#0874d5` to `#0055ee` with white text; mint court accents and pastel blue/green/purple feature tiles.
+- Borders: `#dce8f9`; soft selected surface: `#eaf4ff`.
 - Text: 16px inputs, 14px content, 12px metadata. Small English decorative labels may use 10px. Keep Thai line-height generous.
-- Spacing: 4/8/12/16/24px. Radius: 12px controls, 14–16px cards, 20px dialogs.
+- Spacing: 4/8/12/16/24px. Radius: 14px inputs, 18–24px cards, 26px dialogs, pill primary buttons.
 
 ## Layout and interactions
 
@@ -20,7 +20,8 @@ Compact mobile activity tool for friends organizing badminton. Use the skill's F
 - Roster grouped by Level 1–5; 2/3/4 columns at phone/600px/900px. Whole player tile opens an action dialog.
 - Prefer 44px touch controls; 48px primary actions. Selected, disabled, hover and pressed states must be visible without changing layout.
 - Native dialog for focus containment and Escape; labeled fields and controls. Keep success feedback visible above the dialog layer.
-- Team selection uses a green fieldset for Team A and blue for Team B, with explicit team legends. Show the selected name first, then Level and games below; retain native select controls for mobile and keyboard support.
+- Team A uses blue and Team B mint, with explicit team legends. Show the selected name first, then Level and games below; retain native select controls for mobile and keyboard support.
+- Large welcoming artwork is reserved for the empty state. Use short scene strips during play, hide them on short phones, and retain internally scrolling player/history/billing lists.
 - Normal text contrast target 4.5:1. Do not convey skill or selected state only through color.
 - Honor reduced motion; no new runtime dependencies or remote fonts.
 
@@ -29,3 +30,4 @@ Compact mobile activity tool for friends organizing badminton. Use the skill's F
 - `activity management dashboard --design-system --density 8`: Flat Design, teal palette, compact spacing. Applied style; adapted palette and font to the user's requirements.
 - `touch target size --domain ux`: touch comfort and web target sizing. Applied generous tap areas without conflating native points and CSS pixels.
 - `dialogs --stack react`: focus containment and return on close. Preserve native dialog behavior.
+- `playful sports mobile blue --design-system --density 8`: vibrant block styling. Adapt to the user's blue illustrated reference, Thai typography and compact utility layout.

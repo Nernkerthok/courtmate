@@ -46,23 +46,126 @@ function Shuttle({ className = "" }: { className?: string }) {
       className={className}
     >
       <path d="m26 68-9-48 17-9 16-5 17 5 17 9-11 48Z" fill="currentColor" />
-      <path d="m27 67 46 0-9 24c-7 17-24 17-31 0Z" fill="#d6f68b" />
+      <path d="m27 67 46 0-9 24c-7 17-24 17-31 0Z" fill="#d8f7ff" />
       <path
         d="m34 12 7 54m9-59v59m18-54-9 54M23 40h55M27 61h47"
-        stroke="#36714f"
+        stroke="#2997d0"
         strokeWidth="1.7"
       />
     </svg>
   );
 }
 function Avatar({ p }: { p: Pick<Player, "id" | "name"> }) {
+  const shirts = ["#078bff", "#4ab694", "#9670ee", "#ed9b4d", "#e778a1"];
+  const skin = p.id % 3 === 0 ? "#d59669" : "#ffc79b";
   return (
     <span
       aria-hidden="true"
-      className={`flex size-9 shrink-0 items-center justify-center rounded-full text-sm ${colors[(p.id - 1) % colors.length]}`}
+      className={`player-avatar flex size-9 shrink-0 items-center justify-center rounded-full text-sm ${colors[(p.id - 1) % colors.length]}`}
     >
-      {Array.from(p.name)[0] || "?"}
+      <svg viewBox="0 0 48 48" fill="none">
+        <path
+          d="M7 48c0-12 7-17 17-17s17 5 17 17"
+          fill={shirts[(p.id - 1) % shirts.length]}
+        />
+        <path d="m19 30 5 8 5-8" fill="white" />
+        <rect x="20" y="26" width="8" height="10" rx="3" fill={skin} />
+        {p.id % 2 === 0 && (
+          <path d="M12 20C10 3 38 3 36 20l2 18-10-4-10 2-8-1Z" fill="#27314a" />
+        )}
+        <ellipse cx="24" cy="20" rx="11" ry="14" fill={skin} />
+        <path
+          d="M13 19C8 6 23 2 28 6c10-1 10 9 7 13l-4-8c-4 5-10 3-14 2l-3 8Z"
+          fill="#27314a"
+        />
+        <path
+          d="M19 20h.1m9.8 0h.1"
+          stroke="#27314a"
+          strokeWidth="2.3"
+          strokeLinecap="round"
+        />
+        <path
+          d="M21 26q3 3 6 0"
+          stroke="#a95c47"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
     </span>
+  );
+}
+function CourtArt() {
+  return (
+    <svg
+      className="court-art"
+      viewBox="0 0 640 220"
+      fill="none"
+      aria-hidden="true"
+      preserveAspectRatio="xMidYMid slice"
+    >
+      <defs>
+        <linearGradient
+          id="hall"
+          x2="640"
+          y2="220"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#163e72" />
+          <stop offset="1" stopColor="#71ddff" />
+        </linearGradient>
+        <linearGradient
+          id="floor"
+          x1="320"
+          y1="110"
+          x2="320"
+          y2="220"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#64e6ac" />
+          <stop offset="1" stopColor="#20b68c" />
+        </linearGradient>
+      </defs>
+      <path fill="url(#hall)" d="M0 0h640v220H0z" />
+      <path fill="#95deff" d="m0 40 130 53v85L0 207z" />
+      <path fill="#b2eaff" d="M130 93h380v85H130z" />
+      <path fill="#80bce6" d="m510 93 130-53v167l-130-29z" />
+      <path fill="#ffa8c0" d="M130 112h380v35H130z" />
+      <path fill="#61c5ec" d="M130 147h380v31H130z" />
+      <path fill="#235484" d="m0 0 130 93h380L640 0v25L520 106H120L0 25z" />
+      <path
+        d="m110 0 72 93M270 0l12 93M430 0l-48 93M590 0l-108 93"
+        stroke="#3273a8"
+        strokeWidth="15"
+      />
+      <path
+        d="m111 28 42 8 12 16-42-8zm156-3 42 2 2 16-42-2zm151 2 42-2-8 16-42 2zm111 9 42-8-12 16-42 8z"
+        fill="#e5faff"
+      />
+      <path fill="url(#floor)" d="M130 171h380l130 49H0z" />
+      <path
+        d="m170 179-74 34h448l-74-34H170Zm150 0v34m-182-20h364m-313-14-48 34m290-34 48 34"
+        stroke="white"
+        strokeWidth="2.5"
+      />
+      <path
+        d="M170 94v81m340-81v81M69 68v126m504-126v126"
+        stroke="#2778ac"
+        strokeWidth="11"
+      />
+      <path fill="#d5edff" fillOpacity=".45" d="M129 146h382v35H129z" />
+      <path
+        d="M130 151h380m-380 8h380m-380 8h380m-380 8h380m-350-29v35m30-35v35m30-35v35m30-35v35m30-35v35m30-35v35m30-35v35m30-35v35m30-35v35m30-35v35m30-35v35"
+        stroke="#f0fbff"
+        strokeWidth="1"
+      />
+      <path d="M129 144h382" stroke="white" strokeWidth="5" />
+      <path
+        d="M127 140v48m386-48v48"
+        stroke="#174d89"
+        strokeWidth="5"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 function Label({ title, children }: { title: string; children: ReactNode }) {
@@ -249,7 +352,7 @@ export default function App() {
             </span>
           </button>
           <div className="flex items-center gap-2">
-            <span className="version-badge hidden sm:inline">v0.7</span>
+            <span className="version-badge hidden sm:inline">v0.8</span>
             {!installation.installed && (
               <button
                 className="install-header-button"
@@ -295,24 +398,36 @@ export default function App() {
             (!c.groupCreated ? (
               <section className="welcome-card">
                 <div className="welcome-art">
-                  <div />
-                  <Shuttle className="relative h-24 w-20 rotate-[25deg] text-white" />
-                  <Sparkles
-                    className="absolute top-6 right-9 text-lime-pop/70"
-                    size={20}
+                  <img
+                    src="./art/badminton-friends.webp"
+                    alt="เพื่อนเล่นแบดมินตันด้วยกันในสนาม"
+                    width="960"
+                    height="640"
+                    fetchPriority="high"
                   />
                 </div>
-                <p className="eyebrow mt-5">GOOD FRIENDS. GREAT RALLIES.</p>
-                <h2>
-                  รวมเพื่อนให้พร้อม
-                  <br />
-                  แล้วไปตีด้วยกัน<span className="text-club-500">.</span>
-                </h2>
-                <p className="mt-2 text-xs leading-6 text-muted">
-                  สร้างก๊วน เพิ่มชื่อและ Level
-                  <br />
-                  จับคู่และหารค่าใช้จ่ายได้ในที่เดียว
-                </p>
+                <div className="welcome-copy">
+                  <p>เพื่อนครบ คู่พร้อม</p>
+                  <h2>วันนี้ไปตีแบดกัน!</h2>
+                  <p>สร้างก๊วน จัดคู่ หารค่าใช้จ่ายในที่เดียว</p>
+                </div>
+                <div
+                  className="welcome-features"
+                  aria-label="เริ่มง่ายในสามขั้นตอน"
+                >
+                  <span>
+                    <Users size={23} aria-hidden="true" />
+                    <strong>รวมเพื่อน</strong>
+                  </span>
+                  <span>
+                    <Shuffle size={23} aria-hidden="true" />
+                    <strong>จัดทีม</strong>
+                  </span>
+                  <span>
+                    <Wallet size={23} aria-hidden="true" />
+                    <strong>หารค่าใช้จ่าย</strong>
+                  </span>
+                </div>
                 <button
                   className="btn btn-primary mt-5 w-full max-w-xs"
                   onClick={c.openGroup}
@@ -330,6 +445,13 @@ export default function App() {
               </section>
             ) : (
               <section className="roster-screen">
+                <img
+                  className="scene-strip"
+                  src="./art/badminton-friends.webp"
+                  alt=""
+                  width="960"
+                  height="640"
+                />
                 <div className="club-strip">
                   <div className="min-w-0">
                     <span className="eyebrow">MY CREW</span>
@@ -435,6 +557,13 @@ export default function App() {
 
           {c.step === "play" && (
             <section className="play-screen">
+              <img
+                className="scene-strip"
+                src="./art/badminton-friends.webp"
+                alt=""
+                width="960"
+                height="640"
+              />
               <div className="club-strip !py-3">
                 <div className="min-w-0 flex-1">
                   <h2 className="truncate !text-sm">
@@ -548,7 +677,10 @@ export default function App() {
                           </div>
                           <div className="teams-row">
                             {[m.a, m.b].map((team, t) => (
-                              <div key={t} className="court-team">
+                              <div
+                                key={t}
+                                className={`court-team court-team-${t === 0 ? "a" : "b"}`}
+                              >
                                 <span className="text-xs opacity-60">
                                   ทีม {t === 0 ? "A" : "B"}
                                 </span>
@@ -704,16 +836,17 @@ export default function App() {
           )}
 
           {c.step === "cost" && (
-            <section className="cost-screen">
+            <section
+              className={`cost-screen ${c.summary ? "has-summary" : ""}`}
+            >
+              <CourtArt />
               <div className="cost-banner">
                 <div>
-                  <span className="text-xs text-[#cfe3d7]">
-                    ค่าใช้จ่ายทั้งหมด
-                  </span>
+                  <span className="text-xs text-muted">ค่าใช้จ่ายทั้งหมด</span>
                   <p className="mt-0.5 text-[30px] font-semibold leading-tight tracking-tight">
                     ฿{baht(c.summary?.bill.totalCents || estimate)}
                   </p>
-                  <span className="mt-2 block text-xs text-[#cfe3d7]">
+                  <span className="mt-2 block text-xs text-muted">
                     {c.costFields.hours} ชม. · {c.costFields.courts} คอร์ท · ฿
                     {c.costFields.rate}/คอร์ท/ชม.
                   </span>
@@ -721,7 +854,7 @@ export default function App() {
                 <button
                   aria-label="ตั้งค่าค่าใช้จ่าย"
                   onClick={() => c.setModal("costSettings")}
-                  className="flex size-11 items-center justify-center rounded-xl bg-white/10 text-lime-pop"
+                  className="cost-settings-button"
                 >
                   <Settings2 size={20} />
                 </button>
