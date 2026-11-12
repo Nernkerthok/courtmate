@@ -448,6 +448,14 @@ function CourtMateApp() {
                   <Sparkles size={14} />
                   ลองด้วยรายชื่อตัวอย่าง
                 </button>
+                <a
+                  className="privacy-link"
+                  href="./privacy.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  นโยบายความเป็นส่วนตัว
+                </a>
               </section>
             ) : (
               <section className="roster-screen">

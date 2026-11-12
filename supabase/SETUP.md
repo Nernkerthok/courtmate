@@ -23,6 +23,7 @@ Add `http://127.0.0.1:5173/` only while testing locally. Do not use an unrestric
 ### Google provider
 
 1. Open [Google Auth Platform](https://console.cloud.google.com/auth/overview) in a Google Cloud project dedicated to CourtMate. Set app name **CourtMate**, a support email and developer contact email you control. Choose **External** audience for other organizers.
+   In **Branding**, set the Application home page to `https://sensational-quokka-95aa17.netlify.app/` and Application privacy policy link to `https://sensational-quokka-95aa17.netlify.app/privacy.html`. The policy is a public static page; review its actual data practices and contact address when changing the service. The app links to it on the public welcome screen and account panel. Save all Branding fields before trying **Audience → Publish app**. Publishing availability and brand verification are determined by Google.
 2. Request only `openid`, `userinfo.email`, and `userinfo.profile`. Do not request Gmail, Drive, offline access or extra Google API permissions.
 3. Create an OAuth client, type **Web application**, name **CourtMate Web**. Use this exact authorized JavaScript origin (no trailing slash):
 

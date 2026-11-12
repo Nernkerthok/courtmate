@@ -353,6 +353,14 @@ export function AccountPanel({ cloud, groupName, onInstall, onInvite }: Props) {
         <ShieldCheck size={15} aria-hidden="true" />
         ก๊วนที่บันทึกเปิดได้เฉพาะบัญชีของคุณ · กดบันทึกก่อนปิดหน้า
       </p>
+      <a
+        className="privacy-link"
+        href="./privacy.html"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        นโยบายความเป็นส่วนตัว
+      </a>
       <button className="btn btn-secondary w-full" onClick={onInstall}>
         <Smartphone size={17} aria-hidden="true" />
         ติดตั้งแอปบนเครื่อง
