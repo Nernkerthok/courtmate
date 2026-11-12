@@ -89,7 +89,11 @@ export function InvitePanel({
                 })}{" "}
                 · สร้างลิงก์ใหม่จะปิดลิงก์เดิม
               </p>
-              {cloud.dirty ? (
+              {cloud.busy ? (
+                <p className="account-help" role="status">
+                  กำลังดำเนินการ…
+                </p>
+              ) : cloud.dirty ? (
                 <p className="account-error">
                   มีการแก้ไขที่ยังไม่บันทึก กดปุ่มด้านบนก่อนชวนเพื่อน
                 </p>

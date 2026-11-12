@@ -315,6 +315,7 @@ export function useCloudGroups(options: {
     const epoch = generation.current;
     locked.current = true;
     setBusy("invite");
+    setInvite(null);
     try {
       const token = Array.from(
         crypto.getRandomValues(new Uint8Array(32)),
