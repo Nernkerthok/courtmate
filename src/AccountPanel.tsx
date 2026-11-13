@@ -16,7 +16,7 @@ import googleMark from "./assets/google-g.png";
 type Props = {
   cloud: ReturnType<typeof useCloudGroups>;
   groupName: string | null;
-  onInstall: () => void;
+  onInstall?: () => void;
   onInvite: () => void;
 };
 export function AccountPanel({ cloud, groupName, onInstall, onInvite }: Props) {
@@ -361,10 +361,12 @@ export function AccountPanel({ cloud, groupName, onInstall, onInvite }: Props) {
       >
         นโยบายความเป็นส่วนตัว
       </a>
-      <button className="btn btn-secondary w-full" onClick={onInstall}>
-        <Smartphone size={17} aria-hidden="true" />
-        ติดตั้งแอปบนเครื่อง
-      </button>
+      {onInstall && (
+        <button className="btn btn-secondary w-full" onClick={onInstall}>
+          <Smartphone size={17} aria-hidden="true" />
+          ติดตั้งแอปบนเครื่อง
+        </button>
+      )}
     </div>
   );
 }

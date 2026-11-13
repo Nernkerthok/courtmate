@@ -1,6 +1,35 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { isAppWindow } from "../.test-build/installState.js";
+
+test("installed windows are recognized on Android, iOS and desktop app display modes", () => {
+  for (const mode of ["standalone", "minimal-ui", "window-controls-overlay"]) {
+    assert.equal(
+      isAppWindow((query) => ({
+        matches: query === `(display-mode: ${mode})`,
+      })),
+      true,
+    );
+  }
+  assert.equal(
+    isAppWindow(() => ({ matches: false }), true),
+    true,
+  );
+});
+
+test("an ordinary browser tab or browser fullscreen is not mistaken for an installed window", () => {
+  assert.equal(
+    isAppWindow(() => ({ matches: false })),
+    false,
+  );
+  assert.equal(
+    isAppWindow((query) => ({
+      matches: query === "(display-mode: fullscreen)",
+    })),
+    false,
+  );
+});
 
 test("installed app stays inside its GitHub Pages subdirectory and uses valid launcher icons", () => {
   const manifest = JSON.parse(

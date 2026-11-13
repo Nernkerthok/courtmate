@@ -1874,6 +1874,48 @@ body {
   margin-bottom: -20px;
   background: #fff;
 }
+.player-add-modes {
+  display: grid;
+  grid-template-columns: 1fr 1.55fr;
+  gap: 6px;
+  padding: 5px;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  background: var(--color-club-50);
+}
+.player-add-modes button {
+  min-height: 44px;
+  border-radius: 12px;
+  padding: 8px;
+  font-size: 13px;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+.player-add-modes button[aria-pressed="true"] {
+  color: var(--color-club-700);
+  background: white;
+  box-shadow: 0 2px 6px #101e4910;
+  font-weight: 500;
+}
+.bulk-player-names {
+  resize: vertical;
+  min-height: 110px;
+  line-height: 1.65;
+}
+.bulk-player-status {
+  padding: 10px 12px;
+  margin-top: 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  color: var(--color-club-700);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.bulk-player-status ul {
+  color: #9a342b;
+  margin: 0;
+  padding-left: 16px;
+}
 .player-form-actions .btn {
   padding-inline: 10px;
   white-space: nowrap;

@@ -35,6 +35,7 @@ import {
 import { useCourtMate } from "./useCourtMate";
 import { useInstall } from "./useInstall";
 import { AccountPanel } from "./AccountPanel";
+import { BulkPlayersForm } from "./BulkPlayersForm";
 import { InvitePanel } from "./InvitePanel";
 import { InviteView } from "./InviteView";
 
@@ -257,6 +258,7 @@ function CourtMateApp() {
     cost: "จบเกม เคลียร์ง่าย",
   };
   const modalTitles = {
+    bulkPlayers: "เพิ่มผู้เล่นหลายคน",
     group: c.groupCreated ? "เปลี่ยนชื่อก๊วน" : "สร้างก๊วนใหม่",
     player: c.editingPlayerId !== null ? "แก้ไขผู้เล่น" : "เพิ่มเพื่อนเข้าก๊วน",
     playerActions: "จัดการผู้เล่น",
@@ -1067,7 +1069,9 @@ function CourtMateApp() {
             <AccountPanel
               cloud={c.cloud}
               groupName={c.groupCreated ? c.groupName : null}
-              onInstall={() => c.setModal("install")}
+              onInstall={
+                installation.installed ? undefined : () => c.setModal("install")
+              }
               onInvite={() => c.setModal("invite")}
             />
           )}
@@ -1222,6 +1226,32 @@ function CourtMateApp() {
                 )
               )}
             </div>
+          )}
+          {(c.modal === "player" || c.modal === "bulkPlayers") &&
+            c.editingPlayerId === null && (
+              <div
+                className="player-add-modes"
+                role="group"
+                aria-label="วิธีเพิ่มผู้เล่น"
+              >
+                {(["player", "bulkPlayers"] as const).map((mode) => (
+                  <button
+                    type="button"
+                    key={mode}
+                    aria-pressed={c.modal === mode}
+                    onClick={() => c.setModal(mode)}
+                  >
+                    {mode === "player" ? "ทีละคน" : "หลายคนพร้อมกัน"}
+                  </button>
+                ))}
+              </div>
+            )}
+          {c.modal === "bulkPlayers" && (
+            <BulkPlayersForm
+              players={c.players}
+              onAdd={c.addPlayers}
+              onDone={close}
+            />
           )}
           {c.modal === "player" && (
             <form onSubmit={c.addPlayer}>

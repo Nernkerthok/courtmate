@@ -17,6 +17,7 @@ import {
 import { createBillImage } from "./export";
 import { parseSnapshot, type CourtSnapshot, type Played } from "./snapshot";
 import { useCloudGroups } from "./useCloudGroups";
+import { buildBulkPlayers } from "./bulkPlayers";
 type Step = "group" | "play" | "cost";
 type Summary = { bill: Bill; costs: CostInput; name: string };
 const sampleNames = ["ต้น", "มิน", "เจมส์", "พลอย", "บาส", "ฟ้า", "นัท", "แพร"];
@@ -66,6 +67,7 @@ export function useCourtMate() {
     | "reset"
     | "group"
     | "player"
+    | "bulkPlayers"
     | "playerActions"
     | "expense"
     | "costSettings"
@@ -165,6 +167,18 @@ export function useCourtMate() {
     setLevel(3);
     setAvatar((id.current - 1) % 8);
     setModal("player");
+  };
+  const addPlayers = (raw: string, defaultLevel: number) => {
+    try {
+      const added = buildBulkPlayers(players, raw, defaultLevel, id.current);
+      setPlayers([...players, ...added]);
+      id.current += added.length;
+      notify(`เพิ่มผู้เล่น ${added.length} คนเข้าก๊วนสำเร็จ`);
+      return true;
+    } catch (error) {
+      notify((error as Error).message);
+      return false;
+    }
   };
   const openEditPlayer = (pid: number) => {
     const player = players.find((p) => p.id === pid);
@@ -588,6 +602,7 @@ export function useCourtMate() {
     players,
     editingPlayerId,
     openNewPlayer,
+    addPlayers,
     openEditPlayer,
     selectedPlayer,
     openPlayerActions,
