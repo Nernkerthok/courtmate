@@ -62,80 +62,6 @@ function Shuttle({ className = "" }: { className?: string }) {
     </svg>
   );
 }
-function CourtArt() {
-  return (
-    <svg
-      className="court-art"
-      viewBox="0 0 640 220"
-      fill="none"
-      aria-hidden="true"
-      preserveAspectRatio="xMidYMid slice"
-    >
-      <defs>
-        <linearGradient
-          id="hall"
-          x2="640"
-          y2="220"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor="#163e72" />
-          <stop offset="1" stopColor="#71ddff" />
-        </linearGradient>
-        <linearGradient
-          id="floor"
-          x1="320"
-          y1="110"
-          x2="320"
-          y2="220"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor="#64e6ac" />
-          <stop offset="1" stopColor="#20b68c" />
-        </linearGradient>
-      </defs>
-      <path fill="url(#hall)" d="M0 0h640v220H0z" />
-      <path fill="#95deff" d="m0 40 130 53v85L0 207z" />
-      <path fill="#b2eaff" d="M130 93h380v85H130z" />
-      <path fill="#80bce6" d="m510 93 130-53v167l-130-29z" />
-      <path fill="#ffa8c0" d="M130 112h380v35H130z" />
-      <path fill="#61c5ec" d="M130 147h380v31H130z" />
-      <path fill="#235484" d="m0 0 130 93h380L640 0v25L520 106H120L0 25z" />
-      <path
-        d="m110 0 72 93M270 0l12 93M430 0l-48 93M590 0l-108 93"
-        stroke="#3273a8"
-        strokeWidth="15"
-      />
-      <path
-        d="m111 28 42 8 12 16-42-8zm156-3 42 2 2 16-42-2zm151 2 42-2-8 16-42 2zm111 9 42-8-12 16-42 8z"
-        fill="#e5faff"
-      />
-      <path fill="url(#floor)" d="M130 171h380l130 49H0z" />
-      <path
-        d="m170 179-74 34h448l-74-34H170Zm150 0v34m-182-20h364m-313-14-48 34m290-34 48 34"
-        stroke="white"
-        strokeWidth="2.5"
-      />
-      <path
-        d="M170 94v81m340-81v81M69 68v126m504-126v126"
-        stroke="#2778ac"
-        strokeWidth="11"
-      />
-      <path fill="#d5edff" fillOpacity=".45" d="M129 146h382v35H129z" />
-      <path
-        d="M130 151h380m-380 8h380m-380 8h380m-380 8h380m-350-29v35m30-35v35m30-35v35m30-35v35m30-35v35m30-35v35m30-35v35m30-35v35m30-35v35m30-35v35m30-35v35"
-        stroke="#f0fbff"
-        strokeWidth="1"
-      />
-      <path d="M129 144h382" stroke="white" strokeWidth="5" />
-      <path
-        d="M127 140v48m386-48v48"
-        stroke="#174d89"
-        strokeWidth="5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
 function Label({ title, children }: { title: string; children: ReactNode }) {
   return (
     <label className="block min-w-0">
@@ -383,16 +309,7 @@ function CourtMateApp() {
       </header>
       <main className="app-workspace">
         <div className="screen-heading">
-          <div>
-            <p className="eyebrow">
-              {c.step === "group"
-                ? "01 / YOUR CREW"
-                : c.step === "play"
-                  ? "02 / ON COURT"
-                  : "03 / SPLIT THE BILL"}
-            </p>
-            <h1>{titles[c.step]}</h1>
-          </div>
+          <h1>{titles[c.step]}</h1>
           <span
             className="step-counter"
             aria-label={`ขั้นตอน ${steps.findIndex((s) => s.id === c.step) + 1} จาก 3`}
@@ -470,7 +387,6 @@ function CourtMateApp() {
                 />
                 <div className="club-strip">
                   <div className="min-w-0">
-                    <span className="eyebrow">MY CREW</span>
                     <h2 className="truncate">{c.groupName}</h2>
                   </div>
                   <button
@@ -633,28 +549,56 @@ function CourtMateApp() {
                       count: c.history.length,
                     },
                   ] as const
-                ).map((v) => (
+                ).map((v, index, views) => (
                   <button
                     key={v.id}
+                    id={`play-tab-${v.id}`}
                     role="tab"
-                    aria-label={
-                      v.id === "players" ? `ผู้เล่น ${v.count} คน` : undefined
-                    }
+                    aria-controls="play-panel"
+                    tabIndex={c.playView === v.id ? 0 : -1}
+                    aria-label={`${v.label} ${v.count} ${v.id === "players" ? "คน" : v.id === "history" ? "เกม" : "คอร์ท"}`}
                     aria-selected={c.playView === v.id}
                     onClick={() => c.setPlayView(v.id)}
+                    onKeyDown={(event) => {
+                      const offset =
+                        event.key === "ArrowRight"
+                          ? 1
+                          : event.key === "ArrowLeft"
+                            ? -1
+                            : 0;
+                      const next =
+                        event.key === "Home"
+                          ? 0
+                          : event.key === "End"
+                            ? views.length - 1
+                            : (index + offset + views.length) % views.length;
+                      if (
+                        !offset &&
+                        event.key !== "Home" &&
+                        event.key !== "End"
+                      )
+                        return;
+                      event.preventDefault();
+                      c.setPlayView(views[next].id);
+                      document
+                        .getElementById(`play-tab-${views[next].id}`)
+                        ?.focus();
+                    }}
                     className={c.playView === v.id ? "selected" : ""}
                   >
                     {v.label}
-                    <span>
+                    <span className="tab-count" aria-hidden="true">
                       {v.count}
-                      {v.id === "players" ? " คน" : ""}
                     </span>
                   </button>
                 ))}
               </div>
               <div
                 className="panel-scroll"
+                id="play-panel"
                 role="tabpanel"
+                tabIndex={0}
+                aria-labelledby={`play-tab-${c.playView}`}
                 aria-label={
                   c.playView === "courts"
                     ? "คอร์ทเล่น"
@@ -705,7 +649,7 @@ function CourtMateApp() {
                                 key={t}
                                 className={`court-team court-team-${t === 0 ? "a" : "b"}`}
                               >
-                                <span className="text-xs opacity-60">
+                                <span className="team-label">
                                   ทีม {t === 0 ? "A" : "B"}
                                 </span>
                                 {team.map((pid) => {
@@ -713,16 +657,16 @@ function CourtMateApp() {
                                     (p) => p.id === pid,
                                   )!;
                                   return (
-                                    <div
-                                      key={pid}
-                                      className="flex min-w-0 items-center gap-2"
-                                    >
+                                    <div key={pid} className="court-player">
                                       <Avatar p={p} />
                                       <div className="min-w-0">
-                                        <strong className="block truncate text-xs font-medium">
+                                        <strong
+                                          className="block truncate font-medium"
+                                          title={p.name}
+                                        >
                                           {p.name}
                                         </strong>
-                                        <span className="text-xs opacity-55">
+                                        <span className="court-player-meta">
                                           L{p.level} · {p.games} เกม
                                         </span>
                                       </div>
@@ -761,8 +705,8 @@ function CourtMateApp() {
                     </div>
                   ))}
                 {c.playView === "players" && (
-                  <div className="rounded-xl border border-[#e2e9da] bg-white px-3">
-                    <div className="flex justify-between border-b border-[#e9eee1] py-3 text-xs text-muted">
+                  <div className="player-count-list">
+                    <div className="player-count-heading">
                       <span>ผู้เล่น / Level</span>
                       <span>เกม / พร้อมเล่น</span>
                     </div>
@@ -777,7 +721,7 @@ function CourtMateApp() {
                               aria-label={`แก้ไข ${p.name}`}
                               onClick={() => c.openEditPlayer(p.id)}
                             >
-                              <strong className="block truncate text-xs font-medium">
+                              <strong className="block truncate text-sm font-medium">
                                 {p.name}
                               </strong>
                               <Pencil
@@ -789,7 +733,7 @@ function CourtMateApp() {
                               L{p.level} · {levelNames[p.level]}
                             </small>
                           </div>
-                          <strong className="min-w-8 text-center text-xl font-medium">
+                          <strong className="player-game-count">
                             {p.games}
                           </strong>
                           <button
@@ -863,7 +807,13 @@ function CourtMateApp() {
             <section
               className={`cost-screen ${c.summary ? "has-summary" : ""}`}
             >
-              <CourtArt />
+              <img
+                className="court-art"
+                src="./art/badminton-player.webp"
+                alt=""
+                width="960"
+                height="640"
+              />
               <div className="cost-banner">
                 <div>
                   <span className="text-xs text-muted">ค่าใช้จ่ายทั้งหมด</span>
@@ -1000,18 +950,19 @@ function CourtMateApp() {
             </section>
           )}
         </div>
-        {(c.step !== "group" || c.groupCreated) && (
-          <div className="primary-action">
-            <button
-              className="btn btn-primary w-full"
-              disabled={mainAction.disabled}
-              onClick={mainAction.action}
-            >
-              <mainAction.icon size={18} />
-              {mainAction.label}
-            </button>
-          </div>
-        )}
+        {(c.step !== "group" || c.groupCreated) &&
+          !(c.step === "play" && c.active) && (
+            <div className="primary-action">
+              <button
+                className="btn btn-primary w-full"
+                disabled={mainAction.disabled}
+                onClick={mainAction.action}
+              >
+                <mainAction.icon size={18} />
+                {mainAction.label}
+              </button>
+            </div>
+          )}
       </main>
       <nav className="app-navigation" aria-label="เมนูหลัก">
         {steps.map((s, i) => (
@@ -1047,7 +998,6 @@ function CourtMateApp() {
       >
         <div className="dialog-heading">
           <div>
-            <p className="eyebrow">COURTMATE CLUBHOUSE</p>
             <h2 id="dialog-title">{c.modal ? modalTitles[c.modal] : ""}</h2>
           </div>
           <button
